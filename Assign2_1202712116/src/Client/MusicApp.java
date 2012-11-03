@@ -34,7 +34,7 @@ import cst420.media.MusicLibraryGui;
 
 /**
  * Purpose is to serve as the main gui and flow of control for the app.
- * Test
+ * I think i am 
  * @author James Harris
  * @version November 2 2012
  */
