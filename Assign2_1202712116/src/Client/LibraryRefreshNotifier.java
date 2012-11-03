@@ -10,7 +10,7 @@ import java.net.Socket;
  * Purpose of this class is to allow the client 
  * to auto refresh when the library is changed by 
  * another client.
- * 
+ * ?
  * @author James Harris
  * @version November 2 2012
  */
