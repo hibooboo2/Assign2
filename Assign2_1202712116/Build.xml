@@ -1,0 +1,65 @@
+<?xml version="1.0"?>
+<project name="Cst420 sample build file for assignment 1."
+         default="targets" basedir="."
+         xmlns:dn="antlib:org.apache.ant.dotnet"
+         xmlns="antlib:org.apache.tools.ant"
+         xmlns:cpptasks="antlib:net.sf.antcontrib.cpptasks">
+
+   <property name="src.dir" value="src"/>
+   <property name="program" value="Library"/>
+   <property name="build" value="./classes" />
+   <property name="lib" value="./lib"/>
+   <property environment="env"/>
+   <property name="user" value="${env.USERNAME}"/>
+
+   <path id="compile.classpath">
+      <pathelement location="${build}"/>
+      <pathelement path="${lib}/MusicLibraryGui.jar"/>
+   </path>
+
+   <target name="targets">
+      <echo message="Targets are targets, clean, build, server, makeLib, and client"/>
+	  <echo message="java -cp classes Server.ConnectionListener portnum "/>
+      <echo message="basedir is: ${basedir}"/>
+      <echo message="os is: ${os.name}"/>
+   </target>
+
+   <target name="prepare">
+      <mkdir dir="${build}" />
+   </target>
+   
+   <target name="clean">
+      <delete dir="${build}" failonerror="false"/>
+	   <delete dir="./Library" failonerror="false"/>
+	    <delete dir="./Temp" failonerror="false"/>
+   </target>
+
+   <target name="build" depends="prepare"
+           description="Compile the Java sources into the classes directory">
+      <javac srcdir="${src.dir}"
+             destdir="${build}">
+         <classpath refid="compile.classpath"/>
+      </javac>
+
+   </target>
+
+   <target name="makeLib" depends="build" description="Make a mock library xml file.">
+      <java classname="Server.MakeMockLibrary" fork="yes">
+         <classpath refid="compile.classpath"/>
+      </java>
+   </target>
+
+   <target name="server" depends="build" description="Start James Harris's Music server">
+      <java classname="Server.ConnectionListener" fork="yes">
+         <classpath refid="compile.classpath"/>
+      </java>
+   </target>
+   
+   <target name="client" depends="build" description="Start James Harris's Music Client">
+      <java classname="Client.MusicApp" fork="yes">
+         <classpath refid="compile.classpath"/>
+      </java>
+   </target>
+   
+</project>
+
