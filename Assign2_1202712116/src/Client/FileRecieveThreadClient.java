@@ -10,7 +10,7 @@ import java.net.Socket;
 /**
  * Purpose of this class is to handle recieving songs from the server to play
  * them. This make the gui able to function while downloading
- * 
+ * Really its ok.
  * @author James Harris
  * @version November 2 2012
  */
