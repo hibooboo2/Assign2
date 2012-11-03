@@ -19,7 +19,6 @@ public class FileRecieveThreadServer extends Thread {
 
 	private Socket socket;
 	private DataInputStream in;
-	private DataOutputStream out;
 	private int idForClient;
 	private Library userLibrary;
 	private String title;
@@ -64,14 +63,6 @@ public class FileRecieveThreadServer extends Thread {
 
 	public void setIdForClient(int idForClient) {
 		this.idForClient = idForClient;
-	}
-
-	public DataOutputStream getOut() {
-		return out;
-	}
-
-	public void setOut(DataOutputStream out) {
-		this.out = out;
 	}
 
 	public DataInputStream getIn() {
