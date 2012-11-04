@@ -2,7 +2,7 @@ package Server;
 
 import java.io.File;
 
-import Client.Popup;
+import Extras.Popup;
 import Library.Library;
 
 public class MakeMockLibrary {

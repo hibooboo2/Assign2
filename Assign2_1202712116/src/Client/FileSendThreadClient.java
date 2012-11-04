@@ -1,12 +1,13 @@
 package Client;
 
-import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.net.Socket;
 import java.net.UnknownHostException;
+
+import Extras.Popup;
 
 /**
  * Purpose of this class is to handle sending songs to the server to store them.
