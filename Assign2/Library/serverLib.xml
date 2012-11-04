@@ -1,0 +1,123 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<java version="1.7.0_07" class="java.beans.XMLDecoder">
+ <object class="Library.Library">
+  <void property="albums">
+   <void method="add">
+    <object class="Library.Album">
+     <void property="album">
+      <string>Album 1</string>
+     </void>
+     <void property="songs">
+      <object class="java.util.Vector">
+       <void method="add">
+        <object class="Library.Song">
+         <void property="album">
+          <string>Album 1</string>
+         </void>
+         <void property="author">
+          <string>Sweet</string>
+         </void>
+         <void property="file">
+          <string>NONE</string>
+         </void>
+         <void property="title">
+          <string>Song 1</string>
+         </void>
+        </object>
+       </void>
+       <void method="add">
+        <object class="Library.Song">
+         <void property="album">
+          <string>Album 1</string>
+         </void>
+         <void property="author">
+          <string>Coolio</string>
+         </void>
+         <void property="file">
+          <string>NONE</string>
+         </void>
+         <void property="title">
+          <string>Song 2</string>
+         </void>
+        </object>
+       </void>
+      </object>
+     </void>
+    </object>
+   </void>
+   <void method="add">
+    <object class="Library.Album">
+     <void property="album">
+      <string>Album 2</string>
+     </void>
+     <void property="songs">
+      <object class="java.util.Vector">
+       <void method="add">
+        <object class="Library.Song">
+         <void property="album">
+          <string>Album 2</string>
+         </void>
+         <void property="author">
+          <string>Cool</string>
+         </void>
+         <void property="file">
+          <string>NONE</string>
+         </void>
+         <void property="title">
+          <string>Song 3</string>
+         </void>
+        </object>
+       </void>
+       <void method="add">
+        <object class="Library.Song">
+         <void property="album">
+          <string>Album 2</string>
+         </void>
+         <void property="author">
+          <string>Cool</string>
+         </void>
+         <void property="file">
+          <string>NONE</string>
+         </void>
+         <void property="title">
+          <string>Song 4</string>
+         </void>
+        </object>
+       </void>
+      </object>
+     </void>
+    </object>
+   </void>
+   <void method="add">
+    <object class="Library.Album">
+     <void property="album">
+      <string>Album 3</string>
+     </void>
+     <void property="songs">
+      <object class="java.util.Vector">
+       <void method="add">
+        <object class="Library.Song">
+         <void property="album">
+          <string>Album 3</string>
+         </void>
+         <void property="author">
+          <string>Cool</string>
+         </void>
+         <void property="file">
+          <string>NONE</string>
+         </void>
+         <void property="title">
+          <string>Song 5</string>
+         </void>
+        </object>
+       </void>
+      </object>
+     </void>
+    </object>
+   </void>
+  </void>
+  <void property="libTitle">
+   <string>serverLib</string>
+  </void>
+ </object>
+</java>

@@ -139,6 +139,7 @@ public class MusicApp extends MusicLibraryGui implements
 		}
 		tree.addTreeSelectionListener(this);
 		tree.addTreeWillExpandListener(this);
+		new Popup("Library Reloaded!").start();
 
 	}
 
@@ -303,8 +304,6 @@ public class MusicApp extends MusicLibraryGui implements
 				chooser.setFileFilter(filter);
 				int returnVal = chooser.showOpenDialog(this);
 				if (returnVal == JFileChooser.APPROVE_OPTION) {
-					System.out.println("You selected the file: "
-							+ chooser.getSelectedFile().getAbsolutePath());
 					String file = chooser.getSelectedFile().getAbsolutePath();
 					out.writeUTF("add");
 					out.writeUTF(this.titleJTF.getText());
@@ -326,6 +325,7 @@ public class MusicApp extends MusicLibraryGui implements
 				out.writeUTF("remove");
 				out.writeUTF(this.titleJTF.getText());
 				out.writeUTF(this.albumJTF.getText());
+				new Popup("Removed " + this.titleJTF.getText()).start();
 			} catch (IOException e1) {
 				// TODO Auto-generated catch block
 				e1.printStackTrace();

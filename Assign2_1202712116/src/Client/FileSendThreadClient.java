@@ -86,6 +86,7 @@ public class FileSendThreadClient extends Thread {
 		fileStream.close();
 		System.out.print("Done....");
 		this.socket.close();
+		new Popup("Upload Complete of " +fileName).start();
 	}
 
 }
