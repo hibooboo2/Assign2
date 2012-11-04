@@ -18,6 +18,7 @@ import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.JOptionPane;
 import javax.swing.JTextField;
+import javax.swing.Popup;
 import javax.swing.event.TreeExpansionEvent;
 import javax.swing.event.TreeSelectionEvent;
 import javax.swing.event.TreeSelectionListener;
@@ -92,7 +93,7 @@ public class MusicApp extends MusicLibraryGui implements
 		Socket libSocket = new Socket(host, (port + 4));
 		DataInputStream inPut = new DataInputStream(libSocket.getInputStream());
 		File theDir = new File(System.getProperty("user.dir") + "/Temp/");
-		if (!theDir.exists()) {
+		if(!theDir.exists()) {
 			System.out.println("creating directory: "
 					+ System.getProperty("user.dir") + "/Temp/");
 			theDir.mkdir();

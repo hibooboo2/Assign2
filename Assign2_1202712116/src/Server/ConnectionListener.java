@@ -29,7 +29,7 @@ public class ConnectionListener extends Thread {
 
 	@SuppressWarnings("resource")
 	public static void main(String args[]) {
-		int portNo = 8888;
+		int portNo;
 		if (args.length >= 1) {
 			portNo = Integer.parseInt(args[0]);
 		} else {
