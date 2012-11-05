@@ -11,11 +11,9 @@ import java.util.Vector;
 
 import Library.Library;
 
-
 /**
- * Purpose is to serve as the protocol of commands between 
- * server and client for each client. This thread starts other 
- * threads as well.
+ * Purpose is to serve as the protocol of commands between server and client for
+ * each client. This thread starts other threads as well.
  * 
  * @author James Harris
  * @version November 2 2012
@@ -144,8 +142,6 @@ public class ClientThread extends Thread {
 					String title = this.in.readUTF();
 					String album = this.in.readUTF();
 					lib.removeSong(title, album);
-					lib.save(System.getProperty("user.dir") + "/Library/"
-							+ "serverLib.xml");
 					changeNotify();
 
 				} else if (command.equalsIgnoreCase("play")) {
@@ -157,17 +153,21 @@ public class ClientThread extends Thread {
 					fileSendThread.setFileName(filename);
 					fileSendThread.start();
 					fileSendServer.close();
-				} else if (command.equalsIgnoreCase("getlibrary")) {
-					sendLibrary();
 				} else if (command.equalsIgnoreCase("save")) {
-					lib.save(System.getProperty("user.dir") + "/Library/" + "serverLib.xml");
-				}else if (command.equalsIgnoreCase("restore")) {
-					lib.restore(System.getProperty("user.dir") + "/Library/" + "serverLib.xml");
-					sendLibrary();
+					lib.save(System.getProperty("user.dir") + "/Library/"
+							+ "serverLib.xml");
+				} else if (command.equalsIgnoreCase("restore")) {
+					lib.restore(System.getProperty("user.dir") + "/Library/"
+							+ "serverLib.xml");
+					sendSongs();
 				} else if (command.equalsIgnoreCase("exit")) {
 					this.socket.close();
 					System.out.println("Client " + this.clientId
 							+ " has Disconnected with exit.");
+				} else if (command.equalsIgnoreCase("getSongs")) {
+					sendSongs();
+				} else if (command.equalsIgnoreCase("getLibrary")) {
+					sendLibrary();
 				}
 			} catch (IOException e) {
 				try {
@@ -176,9 +176,10 @@ public class ClientThread extends Thread {
 							+ " has Disconnected.");
 
 				} catch (IOException e1) {
-					// TODO Auto-generated catch block
-					e1.printStackTrace();
 				}
+			} catch (InterruptedException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
 			}
 		}
 	}
@@ -189,6 +190,7 @@ public class ClientThread extends Thread {
 		}
 	}
 
+	@Deprecated
 	private void sendLibrary() {
 		try {
 			ServerSocket tempServer = new ServerSocket((port + 4));
@@ -211,9 +213,22 @@ public class ClientThread extends Thread {
 			System.out.print("Done....");
 			tempSocket.close();
 		} catch (IOException e2) {
-			// TODO Auto-generated catch block
-			e2.printStackTrace();
 		}
 
+	}
+
+	private void sendSongs() throws IOException, InterruptedException {
+		ServerSocket tempServer = new ServerSocket((port + 5));
+		Socket tempSocket = tempServer.accept();
+		tempServer.close();
+		DataOutputStream outPut = new DataOutputStream(
+				tempSocket.getOutputStream());
+		for (String song : lib.getAllSongs()) {
+			outPut.writeBytes(song);
+			System.out.println(song);
+		}
+		outPut.close();
+		System.out.print("Done....");
+		tempSocket.close();
 	}
 }

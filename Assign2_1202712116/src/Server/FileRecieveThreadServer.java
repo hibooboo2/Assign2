@@ -26,7 +26,7 @@ public class FileRecieveThreadServer extends Thread {
 	public FileRecieveThreadServer(Socket sock, String title, String author, String album, Library lib, ClientThread parent) {
 		socket = sock;
 		userLibrary = lib;
-		lib.addSong(title, author, album, "");
+		lib.addSong(title, author, album);
 		this.setTitle(title);
 		this.setParent(parent);
 

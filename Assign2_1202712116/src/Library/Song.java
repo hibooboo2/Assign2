@@ -4,7 +4,8 @@ import java.io.Serializable;
 
 /**
  * A class defining xml serializable Song objects as java beans.
- * @author James Harris	
+ * 
+ * @author James Harris
  * @version November 2012
  */
 public class Song implements Serializable {
@@ -13,18 +14,8 @@ public class Song implements Serializable {
 	 * 
 	 */
 	private static final long serialVersionUID = -4730522003518557806L;
-	private String title,author;
-	private String album,file;
-
-	public Song(){
-	}
-
-	public Song(String title, String author, String album,String file) {
-		this.title = title;
-		this.author = author;
-		this.setAlbum(album);
-		this.file=file;
-	}
+	private String title, author;
+	private String album, file;
 
 	public String getTitle() {
 		return title;
@@ -57,4 +48,37 @@ public class Song implements Serializable {
 	public void setFile(String file) {
 		this.file = file;
 	}
+
+	public Song() {
+	}
+
+	public Song(String title, String author, String album, String file) {
+		this.title = title;
+		this.author = author;
+		this.setAlbum(album);
+		this.file = file;
+	}
+	
+	public Song(String title, String author, String album) {
+		this.title = title;
+		this.author = author;
+		this.setAlbum(album);
+		this.file = "NONE";
+	}
+	
+	 public Song(String string) {
+		String[] newStrings = string.split("\\Q$");
+		this.title = newStrings[0];
+		this.author= newStrings[1];
+		this.album = newStrings[2];
+		this.file = "";
+	}
+
+	public String toString() {
+	     String songAsString =this.title;
+	     songAsString += "$" +this.author;
+	     songAsString += "$" +this.album+"#";
+		 return songAsString;
+	    }
+	
 }

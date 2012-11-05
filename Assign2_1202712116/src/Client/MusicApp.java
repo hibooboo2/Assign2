@@ -14,7 +14,6 @@ import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.JOptionPane;
 import javax.swing.JTextField;
-import Extras.Popup;
 import javax.swing.event.TreeExpansionEvent;
 import javax.swing.event.TreeSelectionEvent;
 import javax.swing.event.TreeSelectionListener;
@@ -24,6 +23,7 @@ import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeModel;
 import javax.swing.tree.MutableTreeNode;
 
+import Extras.Popup;
 import Library.Album;
 import Library.Library;
 import Library.Song;
@@ -73,6 +73,7 @@ public class MusicApp extends MusicLibraryGui implements
 			this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 			treeRefresh();
 			setVisible(true);
+			System.out.println("Connected");
 
 		} catch (IOException | InterruptedException e) {
 			// TODO Auto-generated catch block
@@ -81,6 +82,8 @@ public class MusicApp extends MusicLibraryGui implements
 
 	}
 
+	@SuppressWarnings("unused")
+	@Deprecated
 	private Library getLibrary() throws UnknownHostException, IOException,
 			InterruptedException {
 		out.writeUTF("getLibrary");
@@ -109,6 +112,30 @@ public class MusicApp extends MusicLibraryGui implements
 
 	}
 
+	private Library getSongs() throws IOException, InterruptedException {
+		out.writeUTF("getSongs");
+		Thread.sleep(200);
+		Socket tempSocket = new Socket(host, port + 5);
+		DataInputStream inPut = new DataInputStream(tempSocket.getInputStream());
+		byte[] bytestoRecieve = new byte[1024];
+		int size = inPut.read(bytestoRecieve);
+		String songs = new String();
+		Library tempLib = new Library("Temp");
+		while (size > 0) {
+			songs += new String(bytestoRecieve, 0, size);
+			System.out.println(songs);
+			size = inPut.read(bytestoRecieve);
+		}
+		String[] songsSeperated = songs.split("\\Q#");
+		for(String song: songsSeperated){
+			tempLib.addSong(song);
+			System.out.println(song);
+		}
+		System.out.println(tempLib.findSong("Song 2").toString());
+		tempSocket.close();
+		return tempLib;
+	}
+
 	public void treeRefresh() {
 
 		try {
@@ -119,11 +146,12 @@ public class MusicApp extends MusicLibraryGui implements
 					.getRoot();
 			clearTree(root, model);
 			int pos = 0;
-			for (Album alb : getLibrary().getAlbums()) {
+			for (Album alb : getSongs().getAlbums()) {
 				model.insertNodeInto(
 						new DefaultMutableTreeNode(alb.getAlbum()), root,
 						model.getChildCount(root));
 				for (Song son : alb.getSongs()) {
+					System.out.println("Tree");
 					model.insertNodeInto(
 							new DefaultMutableTreeNode(son.getTitle()),
 							(MutableTreeNode) root.getChildAt(pos),
@@ -247,8 +275,9 @@ public class MusicApp extends MusicLibraryGui implements
 	}
 
 	// This function is to set fields according to a song object
-	private void setFields(String label) throws UnknownHostException, IOException, InterruptedException {
-		Song song = getLibrary().findSong(label);
+	private void setFields(String label) throws UnknownHostException,
+			IOException, InterruptedException {
+		Song song = getSongs().findSong(label);
 		if (!(song == null)) {
 			this.titleJTF.setText(song.getTitle());
 			this.albumJTF.setText(song.getAlbum());
@@ -307,12 +336,14 @@ public class MusicApp extends MusicLibraryGui implements
 			if (returnVal == JFileChooser.APPROVE_OPTION) {
 				String file = chooser.getSelectedFile().getAbsolutePath();
 				out.writeUTF("add");
-				out.writeUTF(this.titleJTF.getText());
-				out.writeUTF(this.authorJTF.getText());
-				out.writeUTF(this.albumJTF.getText());
-				this.fileUploader = new FileSendThreadClient(file, this,
-						new Socket(host, (port + 1)));
-				this.fileUploader.start();
+				if (!this.titleJTF.getText().equals(null)) {
+					out.writeUTF(this.titleJTF.getText());
+					out.writeUTF(this.authorJTF.getText());
+					out.writeUTF(this.albumJTF.getText());
+					this.fileUploader = new FileSendThreadClient(file, this,
+							new Socket(host, (port + 1)));
+					this.fileUploader.start();
+				}
 			}
 
 		} catch (IOException e1) {
@@ -337,7 +368,7 @@ public class MusicApp extends MusicLibraryGui implements
 				Thread.sleep(500); // give the thread time to complete
 				stopPlaying = false;
 			}
-			if (!(this.getLibrary().findSong(nodeLabel).getFile().equals(""))) {
+			if (!(getSongs().findSong(nodeLabel).getFile().equalsIgnoreCase(""))) {
 				out.writeUTF("play");
 				out.writeUTF(nodeLabel);
 				FileRecieveThreadClient fileRecieveSong = new FileRecieveThreadClient(

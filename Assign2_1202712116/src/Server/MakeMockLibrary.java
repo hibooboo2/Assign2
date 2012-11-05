@@ -2,7 +2,6 @@ package Server;
 
 import java.io.File;
 
-import Extras.Popup;
 import Library.Library;
 
 public class MakeMockLibrary {
@@ -15,14 +14,13 @@ public class MakeMockLibrary {
 			theDir.mkdir();
 		}
 		Library lib = new Library("serverLib");
-		lib.addSong("Song 1", "Sweet", "Album 1", "NONE");
-		lib.addSong("Song 2", "Coolio", "Album 1", "NONE");
-		lib.addSong("Song 3", "Cool", "Album 2", "NONE");
-		lib.addSong("Song 4", "Cool", "Album 2", "NONE");
-		lib.addSong("Song 5", "Cool", "Album 3", "NONE");
+		lib.addSong("Song 1", "Sweet", "Album 1");
+		lib.addSong("Song 2", "Coolio", "Album 1");
+		lib.addSong("Song 3", "Cool", "Album 2");
+		lib.addSong("Song 4", "Cool", "Album 2");
+		lib.addSong("Song 5", "Cool", "Album 3");
 		lib.save(System.getProperty("user.dir") + "/Library/" + "serverLib.xml");
 		lib = lib.restore(System.getProperty("user.dir") + "/Library/"
 				+ "serverLib.xml");
-		new Popup("LiBRARY MADE").start();
 	}
 }

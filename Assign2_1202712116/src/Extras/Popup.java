@@ -21,6 +21,7 @@ public class Popup extends Thread {
 
 	public void run() {
 		JOptionPane.showMessageDialog(new JFrame(), toSay);
+		
 	}
 
 	public static void main(String noargs[]) throws InterruptedException {

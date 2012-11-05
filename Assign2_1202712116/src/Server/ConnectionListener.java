@@ -11,8 +11,6 @@ import Library.Library;
 /**
  * Purpose of this class is to server as the main server that listens for new
  * connections from clients.
- * 
- * 
  * @author James Harris
  * @version November 2 2012
  */
