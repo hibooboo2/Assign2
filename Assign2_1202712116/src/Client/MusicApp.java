@@ -127,11 +127,10 @@ public class MusicApp extends MusicLibraryGui implements
 			size = inPut.read(bytestoRecieve);
 		}
 		String[] songsSeperated = songs.split("\\Q#");
-		for(String song: songsSeperated){
+		for (String song : songsSeperated) {
 			tempLib.addSong(song);
-			System.out.println(song);
+			System.out.println("Song =" + new Song(song).toString());
 		}
-		System.out.println(tempLib.findSong("Song 2").toString());
 		tempSocket.close();
 		return tempLib;
 	}
@@ -277,7 +276,7 @@ public class MusicApp extends MusicLibraryGui implements
 	// This function is to set fields according to a song object
 	private void setFields(String label) throws UnknownHostException,
 			IOException, InterruptedException {
-		Song song = getSongs().findSong(label);
+		Song song = getSong(label);
 		if (!(song == null)) {
 			this.titleJTF.setText(song.getTitle());
 			this.albumJTF.setText(song.getAlbum());
@@ -290,6 +289,26 @@ public class MusicApp extends MusicLibraryGui implements
 			this.authorJTF.setText("");
 		}
 
+	}
+
+	private Song getSong(String label) throws IOException {
+		out.writeUTF("getSong");
+		out.writeUTF(label);
+		Socket tempSocket = new Socket(host, port + 6);
+		DataInputStream inPut = new DataInputStream(tempSocket.getInputStream());
+		byte[] bytestoRecieve = new byte[1024];
+		int size = inPut.read(bytestoRecieve);
+		String song = new String();
+		while (size > 0) {
+			song += new String(bytestoRecieve, 0, size);
+			System.out.println(song);
+			size = inPut.read(bytestoRecieve);
+		}
+		String[] songSeperated = song.split("\\Q$");
+		tempSocket.close();
+		System.out.println(song);
+		return new Song(songSeperated[0], songSeperated[1],
+				songSeperated[2].replaceAll("#", ""));
 	}
 
 	public void actionPerformed(ActionEvent e) {
@@ -332,18 +351,28 @@ public class MusicApp extends MusicLibraryGui implements
 			FileNameExtensionFilter filter = new FileNameExtensionFilter(
 					"Wav files", "wav");
 			chooser.setFileFilter(filter);
+			String title = this.titleJTF.getText();
+			String author = this.authorJTF.getText();
+			String album = this.albumJTF.getText();
+			if (title.equalsIgnoreCase("")) {
+				title = " ";
+			}
+			if (author.equalsIgnoreCase("")) {
+				author = " ";
+			}
+			if (album.equalsIgnoreCase("")) {
+				album = " ";
+			}
 			int returnVal = chooser.showOpenDialog(this);
 			if (returnVal == JFileChooser.APPROVE_OPTION) {
 				String file = chooser.getSelectedFile().getAbsolutePath();
 				out.writeUTF("add");
-				if (!this.titleJTF.getText().equals(null)) {
-					out.writeUTF(this.titleJTF.getText());
-					out.writeUTF(this.authorJTF.getText());
-					out.writeUTF(this.albumJTF.getText());
-					this.fileUploader = new FileSendThreadClient(file, this,
-							new Socket(host, (port + 1)));
-					this.fileUploader.start();
-				}
+				out.writeUTF(title);
+				out.writeUTF(author);
+				out.writeUTF(album);
+				this.fileUploader = new FileSendThreadClient(file, this,
+						new Socket(host, (port + 1)));
+				this.fileUploader.start();
 			}
 
 		} catch (IOException e1) {

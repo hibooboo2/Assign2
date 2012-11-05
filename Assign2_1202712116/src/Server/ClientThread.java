@@ -166,8 +166,8 @@ public class ClientThread extends Thread {
 							+ " has Disconnected with exit.");
 				} else if (command.equalsIgnoreCase("getSongs")) {
 					sendSongs();
-				} else if (command.equalsIgnoreCase("getLibrary")) {
-					sendLibrary();
+				} else if (command.equalsIgnoreCase("getSong")) {
+					sendSong(in.readUTF());
 				}
 			} catch (IOException e) {
 				try {
@@ -227,8 +227,16 @@ public class ClientThread extends Thread {
 			outPut.writeBytes(song);
 			System.out.println(song);
 		}
-		outPut.close();
-		System.out.print("Done....");
+		tempSocket.close();
+	}
+	
+	private void sendSong(String title) throws IOException, InterruptedException {
+		ServerSocket tempServer = new ServerSocket((port + 6));
+		Socket tempSocket = tempServer.accept();
+		tempServer.close();
+		DataOutputStream outPut = new DataOutputStream(
+				tempSocket.getOutputStream());
+		outPut.writeBytes(lib.findSong(title).toString());
 		tempSocket.close();
 	}
 }

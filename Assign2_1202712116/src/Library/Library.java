@@ -177,13 +177,7 @@ public class Library implements Serializable {
 
 	public void addSong(String description) {
 		String[] song = description.split("\\Q$");
-		
-		for(String son: song){
-			System.out.print(son);
-		}
-		System.out.println();
-		//addSong(song[0],song[1],song[2]);
-		//System.out.println(song[0]+song[1]+song[2]);
+		addSong(song[0],song[1],song[2]);
 	}
 
 }
