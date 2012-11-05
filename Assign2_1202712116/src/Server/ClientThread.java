@@ -168,20 +168,23 @@ public class ClientThread extends Thread {
 					sendSongs();
 				} else if (command.equalsIgnoreCase("getSong")) {
 					sendSong(in.readUTF());
+				} else if (command.equalsIgnoreCase("test")) {
+					byte[] bytesRecieved = new byte[1024];
+					int size = in.read(bytesRecieved);
+					System.out.println(new String(bytesRecieved, 0, size));
+					size = in.read(bytesRecieved);
+					System.out.println(new String(bytesRecieved, 0, size));
 				}
-			} catch (IOException e) {
+			} catch (IOException | InterruptedException e) {
 				try {
 					this.socket.close();
 					System.out.println("CLient " + this.clientId
 							+ " has Disconnected.");
-
 				} catch (IOException e1) {
 				}
-			} catch (InterruptedException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
 			}
 		}
+		System.out.println("Thread Dead");
 	}
 
 	public void changeNotify() {
@@ -190,6 +193,7 @@ public class ClientThread extends Thread {
 		}
 	}
 
+	@SuppressWarnings("unused")
 	@Deprecated
 	private void sendLibrary() {
 		try {
@@ -229,8 +233,9 @@ public class ClientThread extends Thread {
 		}
 		tempSocket.close();
 	}
-	
-	private void sendSong(String title) throws IOException, InterruptedException {
+
+	private void sendSong(String title) throws IOException,
+			InterruptedException {
 		ServerSocket tempServer = new ServerSocket((port + 6));
 		Socket tempSocket = tempServer.accept();
 		tempServer.close();

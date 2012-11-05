@@ -304,11 +304,8 @@ public class MusicApp extends MusicLibraryGui implements
 			System.out.println(song);
 			size = inPut.read(bytestoRecieve);
 		}
-		String[] songSeperated = song.split("\\Q$");
 		tempSocket.close();
-		System.out.println(song);
-		return new Song(songSeperated[0], songSeperated[1],
-				songSeperated[2].replaceAll("#", ""));
+		return new Song(song);
 	}
 
 	public void actionPerformed(ActionEvent e) {
@@ -337,10 +334,22 @@ public class MusicApp extends MusicLibraryGui implements
 		}
 		// Refresh the tree
 		else if (e.getActionCommand().equals("Tree Refresh")) {
-			treeRefresh();
+			//treeRefresh();
+			test();
 
 		}
 
+	}
+
+	private void test() {
+		System.out.println("Test Selected");
+		try {
+			out.writeUTF("test");
+			out.write(this.titleJTF.getText().getBytes());
+			out.write(this.albumJTF.getText().getBytes());
+		} catch (IOException e1) {
+		}
+		
 	}
 
 	private void add() {

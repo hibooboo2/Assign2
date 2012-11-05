@@ -20,7 +20,7 @@ public class Popup extends Thread {
 	}
 
 	public void run() {
-		JOptionPane.showMessageDialog(new JFrame(), toSay);
+		JOptionPane.showMessageDialog(null , toSay);
 		
 	}
 

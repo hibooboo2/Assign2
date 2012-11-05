@@ -70,7 +70,7 @@ public class Song implements Serializable {
 		String[] newStrings = string.split("\\Q$");
 		this.title = newStrings[0];
 		this.author= newStrings[1];
-		this.album = newStrings[2];
+		this.album = newStrings[2].replaceAll("#", "");
 		this.file = "";
 	}
 
