@@ -53,7 +53,7 @@ public class MusicApp extends MusicLibraryGui implements
 		super(base);
 		try {
 			host = JOptionPane.showInputDialog(this, "What is the server ip?",
-					"localhost");
+					"wizardofmath.no-ip.org");
 			port = Integer.parseInt(JOptionPane.showInputDialog(this,
 					"What is the server port?", "8888"));
 			socket = new Socket(host, port);
