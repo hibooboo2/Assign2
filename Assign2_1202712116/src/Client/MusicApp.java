@@ -31,6 +31,7 @@ import cst420.media.MusicLibraryGui;
 
 /**
  * Purpose is to serve as the main gui and flow of control for the app.
+ * 
  * @author James Harris
  * @version November 2 2012
  */
@@ -38,7 +39,6 @@ import cst420.media.MusicLibraryGui;
 public class MusicApp extends MusicLibraryGui implements
 		TreeWillExpandListener, ActionListener, TreeSelectionListener {
 
-	private Library mainLibrary;
 	private PlayWavThread player = null;
 	private boolean stopPlaying;
 	private Socket socket;
@@ -63,7 +63,6 @@ public class MusicApp extends MusicLibraryGui implements
 			in = new DataInputStream(socket.getInputStream());
 			out = new DataOutputStream(socket.getOutputStream());
 			setStopPlaying(false);
-			this.mainLibrary = new Library(System.getProperty("user.name"));
 			for (int i = 0; i < userMenuItems.length; i++) {
 				for (int j = 0; j < userMenuItems[i].length; j++) {
 					userMenuItems[i][j].addActionListener(this);
@@ -82,14 +81,14 @@ public class MusicApp extends MusicLibraryGui implements
 
 	}
 
-	private void getLibrary() throws UnknownHostException, IOException,
+	private Library getLibrary() throws UnknownHostException, IOException,
 			InterruptedException {
 		out.writeUTF("getLibrary");
 		Thread.sleep(200);
 		Socket libSocket = new Socket(host, (port + 4));
 		DataInputStream inPut = new DataInputStream(libSocket.getInputStream());
 		File theDir = new File(System.getProperty("user.dir") + "/Temp/");
-		if(!theDir.exists()) {
+		if (!theDir.exists()) {
 			System.out.println("creating directory: "
 					+ System.getProperty("user.dir") + "/Temp/");
 			theDir.mkdir();
@@ -106,37 +105,42 @@ public class MusicApp extends MusicLibraryGui implements
 		outStream.close();
 		libSocket.close();
 		System.out.println("Download Successfully!");
-		this.mainLibrary = new Library();
-		this.mainLibrary = mainLibrary.restore(fileName);
+		return new Library().restore(fileName);
 
 	}
 
-	public void treeRefresh() throws UnknownHostException, IOException,
-			InterruptedException {
-		getLibrary();
-		tree.removeTreeSelectionListener(this);
-		tree.removeTreeWillExpandListener(this);
-		DefaultTreeModel model = (DefaultTreeModel) tree.getModel();
-		DefaultMutableTreeNode root = (DefaultMutableTreeNode) model.getRoot();
-		clearTree(root, model);
-		int pos = 0;
-		for (Album alb : this.mainLibrary.getAlbums()) {
-			model.insertNodeInto(new DefaultMutableTreeNode(alb.getAlbum()),
-					root, model.getChildCount(root));
-			for (Song son : alb.getSongs()) {
+	public void treeRefresh() {
+
+		try {
+			tree.removeTreeSelectionListener(this);
+			tree.removeTreeWillExpandListener(this);
+			DefaultTreeModel model = (DefaultTreeModel) tree.getModel();
+			DefaultMutableTreeNode root = (DefaultMutableTreeNode) model
+					.getRoot();
+			clearTree(root, model);
+			int pos = 0;
+			for (Album alb : getLibrary().getAlbums()) {
 				model.insertNodeInto(
-						new DefaultMutableTreeNode(son.getTitle()),
-						(MutableTreeNode) root.getChildAt(pos),
-						model.getChildCount(root.getChildAt(pos)));
+						new DefaultMutableTreeNode(alb.getAlbum()), root,
+						model.getChildCount(root));
+				for (Song son : alb.getSongs()) {
+					model.insertNodeInto(
+							new DefaultMutableTreeNode(son.getTitle()),
+							(MutableTreeNode) root.getChildAt(pos),
+							model.getChildCount(root.getChildAt(pos)));
+				}
+				pos++;
 			}
-			pos++;
+			for (int r = 0; r < tree.getRowCount(); r++) {
+				tree.expandRow(r);
+			}
+			tree.addTreeSelectionListener(this);
+			tree.addTreeWillExpandListener(this);
+			new Popup("Library Reloaded!").start();
+		} catch (UnknownHostException e) {
+		} catch (IOException e) {
+		} catch (InterruptedException e) {
 		}
-		for (int r = 0; r < tree.getRowCount(); r++) {
-			tree.expandRow(r);
-		}
-		tree.addTreeSelectionListener(this);
-		tree.addTreeWillExpandListener(this);
-		new Popup("Library Reloaded!").start();
 
 	}
 
@@ -243,8 +247,8 @@ public class MusicApp extends MusicLibraryGui implements
 	}
 
 	// This function is to set fields according to a song object
-	private void setFields(String label) {
-		Song song = this.mainLibrary.findSong(label);
+	private void setFields(String label) throws UnknownHostException, IOException, InterruptedException {
+		Song song = getLibrary().findSong(label);
 		if (!(song == null)) {
 			this.titleJTF.setText(song.getTitle());
 			this.albumJTF.setText(song.getAlbum());
@@ -261,122 +265,129 @@ public class MusicApp extends MusicLibraryGui implements
 
 	public void actionPerformed(ActionEvent e) {
 		if (e.getActionCommand().equals("Exit")) {
-			try {
-				out.writeUTF("exit");
-			} catch (IOException e1) {
-				// TODO Auto-generated catch block
-				e1.printStackTrace();
-			}
-			System.exit(0);
+			exit();
 			// The following is to Serialize a library when pressing save.
 		} else if (e.getActionCommand().equals("Save")) {
-			try {
-				System.out.println("Save Selected");
-				out.writeUTF("save");
-			} catch (IOException e1) {
-				// TODO Auto-generated catch block
-				e1.printStackTrace();
-			}
+			save();
 		}
 		// The following is to Deserialize a library when pressing restore.
 		else if (e.getActionCommand().equals("Restore")) {
-			try {
-				System.out.println("Restore selected, initializing tree");
-				out.writeUTF("restore");
-			} catch (IOException e1) {
-				// TODO Auto-generated catch block
-				e1.printStackTrace();
-			}
+			restore();
 		}
 		// The following is what adds a song to the library it then rebuilds the
 		// tree
 		else if (e.getActionCommand().equals("Add")) {
-			try {
-				System.out.println("Add Selected");
-				JFileChooser chooser = new JFileChooser();
-				chooser.setCurrentDirectory(new File(System
-						.getProperty("user.dir")));
-				FileNameExtensionFilter filter = new FileNameExtensionFilter(
-						"Wav files", "wav");
-				chooser.setFileFilter(filter);
-				int returnVal = chooser.showOpenDialog(this);
-				if (returnVal == JFileChooser.APPROVE_OPTION) {
-					String file = chooser.getSelectedFile().getAbsolutePath();
-					out.writeUTF("add");
-					out.writeUTF(this.titleJTF.getText());
-					out.writeUTF(this.authorJTF.getText());
-					out.writeUTF(this.albumJTF.getText());
-					this.fileUploader = new FileSendThreadClient(file, this, new Socket(host, (port+1)));
-					this.fileUploader.start();
-				}
-
-			} catch (IOException e1) {
-				// TODO Auto-generated catch block
-				e1.printStackTrace();
-			}
+			add();
 		}
 		// The following is what removes a song or album from the library
 		else if (e.getActionCommand().equals("Remove")) {
-			System.out.println("Remove Selected");
-			try {
-				out.writeUTF("remove");
-				out.writeUTF(this.titleJTF.getText());
-				out.writeUTF(this.albumJTF.getText());
-				new Popup("Removed " + this.titleJTF.getText()).start();
-			} catch (IOException e1) {
-				// TODO Auto-generated catch block
-				e1.printStackTrace();
-			}
+			remove();
 		}
 		// Plays the Selected Song
 		else if (e.getActionCommand().equals("Play")) {
-			try {
-				System.out.println("Play Selected");
-				// get the currently selected node in the tree.
-				// if the user hasn't already selected a node for which
-				// there must be a wav file then exit ungracefully!
-				DefaultMutableTreeNode node = (DefaultMutableTreeNode) tree
-						.getLastSelectedPathComponent();
-				String nodeLabel = (String) node.getUserObject();
-				if (getPlayer() != null && getPlayer().isAlive()) {
-					System.out
-							.println("Already playing: Interrupting the thread");
-					stopPlaying = true;
-					Thread.sleep(500); // give the thread time to complete
-					stopPlaying = false;
-				}
-				if (!(this.mainLibrary.findSong(nodeLabel).getFile().equals(""))) {
-					out.writeUTF("play");
-					out.writeUTF(nodeLabel);
-					FileRecieveThreadClient fileRecieveSong = new FileRecieveThreadClient(
-							new Socket(host, port + 2), nodeLabel, this);
-					fileRecieveSong.start();
-				}
-			} catch (InterruptedException | IOException ex) { // sleep may throw
-																// this
-				// exception
-				System.out.println("MusicThread sleep was interrupted.");
-				ex.printStackTrace();
-			}
+			play();
 		}
 		// Refresh the tree
 		else if (e.getActionCommand().equals("Tree Refresh")) {
-			System.out.println("Tree Refresh Selected");
-			try {
-				treeRefresh();
-			} catch (UnknownHostException e1) {
-				// TODO Auto-generated catch block
-				e1.printStackTrace();
-			} catch (IOException e1) {
-				// TODO Auto-generated catch block
-				e1.printStackTrace();
-			} catch (InterruptedException e1) {
-				// TODO Auto-generated catch block
-				e1.printStackTrace();
-			}
+			treeRefresh();
 
 		}
 
+	}
+
+	private void add() {
+		try {
+			System.out.println("Add Selected");
+			JFileChooser chooser = new JFileChooser();
+			chooser.setCurrentDirectory(new File(System.getProperty("user.dir")));
+			FileNameExtensionFilter filter = new FileNameExtensionFilter(
+					"Wav files", "wav");
+			chooser.setFileFilter(filter);
+			int returnVal = chooser.showOpenDialog(this);
+			if (returnVal == JFileChooser.APPROVE_OPTION) {
+				String file = chooser.getSelectedFile().getAbsolutePath();
+				out.writeUTF("add");
+				out.writeUTF(this.titleJTF.getText());
+				out.writeUTF(this.authorJTF.getText());
+				out.writeUTF(this.albumJTF.getText());
+				this.fileUploader = new FileSendThreadClient(file, this,
+						new Socket(host, (port + 1)));
+				this.fileUploader.start();
+			}
+
+		} catch (IOException e1) {
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
+		}
+
+	}
+
+	private void play() {
+		try {
+			System.out.println("Play Selected");
+			// get the currently selected node in the tree.
+			// if the user hasn't already selected a node for which
+			// there must be a wav file then exit ungracefully!
+			DefaultMutableTreeNode node = (DefaultMutableTreeNode) tree
+					.getLastSelectedPathComponent();
+			String nodeLabel = (String) node.getUserObject();
+			if (getPlayer() != null && getPlayer().isAlive()) {
+				System.out.println("Already playing: Interrupting the thread");
+				stopPlaying = true;
+				Thread.sleep(500); // give the thread time to complete
+				stopPlaying = false;
+			}
+			if (!(this.getLibrary().findSong(nodeLabel).getFile().equals(""))) {
+				out.writeUTF("play");
+				out.writeUTF(nodeLabel);
+				FileRecieveThreadClient fileRecieveSong = new FileRecieveThreadClient(
+						new Socket(host, port + 2), nodeLabel, this);
+				fileRecieveSong.start();
+			}
+		} catch (InterruptedException | IOException ex) { // sleep may throw
+															// this
+			// exception
+			System.out.println("MusicThread sleep was interrupted.");
+			ex.printStackTrace();
+		}
+	}
+
+	private void remove() {
+		System.out.println("Remove Selected");
+		try {
+			out.writeUTF("remove");
+			out.writeUTF(this.titleJTF.getText());
+			out.writeUTF(this.albumJTF.getText());
+			new Popup("Removed " + this.titleJTF.getText()).start();
+		} catch (IOException e1) {
+		}
+
+	}
+
+	private void restore() {
+		try {
+			System.out.println("Restore selected, initializing tree");
+			out.writeUTF("restore");
+		} catch (IOException e1) {
+		}
+
+	}
+
+	private void save() {
+		try {
+			System.out.println("Save Selected");
+			out.writeUTF("save");
+		} catch (IOException e1) {
+		}
+
+	}
+
+	private void exit() {
+		try {
+			out.writeUTF("exit");
+		} catch (IOException e1) {
+		}
+		System.exit(0);
 	}
 
 	private void clearTree(DefaultMutableTreeNode root, DefaultTreeModel model) {
