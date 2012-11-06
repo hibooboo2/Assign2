@@ -21,7 +21,6 @@ import Library.Library;
 public class ClientThread extends Thread {
 
 	private Socket socket;
-	private int clientId;
 	private DataInputStream in;
 	private DataOutputStream out;
 	private Library lib;
@@ -30,8 +29,8 @@ public class ClientThread extends Thread {
 	private int port;
 	private NotifyChangeToLib notifier;
 
-	public ClientThread(Socket sock, int i, Library lib,
-			Vector<ClientThread> clients, int portNo) {
+	public ClientThread(Socket sock, Library lib, Vector<ClientThread> clients,
+			int portNo) {
 
 		try {
 			this.port = portNo;
@@ -42,7 +41,6 @@ public class ClientThread extends Thread {
 			this.setClients(clients);
 			this.setIn(new DataInputStream(this.socket.getInputStream()));
 			this.setOut(new DataOutputStream(this.socket.getOutputStream()));
-			this.setClientId(i);
 			this.setLib(lib);
 
 		} catch (IOException e) {
@@ -57,14 +55,6 @@ public class ClientThread extends Thread {
 
 	public void setSocket(Socket socket) {
 		this.socket = socket;
-	}
-
-	public int getClientId() {
-		return clientId;
-	}
-
-	public void setClientId(int clientId) {
-		this.clientId = clientId;
 	}
 
 	public int getPort() {
@@ -139,16 +129,14 @@ public class ClientThread extends Thread {
 					String album = new String(bytesRecieved, 0, size);
 					ServerSocket fileAddServer = new ServerSocket((port + 1));
 					FileRecieveThreadServer fileAddThread = new FileRecieveThreadServer(
-							fileAddServer.accept(), title, author, album, lib,
-							this);
+							fileAddServer.accept(), title, author, album, this);
 					fileAddThread.start();
 					fileAddServer.close();
 				} else if (command.equalsIgnoreCase("remove")) {
 					size = in.read(bytesRecieved);
 					String title = new String(bytesRecieved, 0, size);
-					size = in.read(bytesRecieved);
-					String album = new String(bytesRecieved, 0, size);
-					lib.removeSong(title, album);
+					this.lib.removeSong(title);
+					System.out.println("Removed " + title);
 					changeNotify();
 
 				} else if (command.equalsIgnoreCase("play")) {
@@ -170,29 +158,30 @@ public class ClientThread extends Thread {
 					sendSongs();
 				} else if (command.equalsIgnoreCase("exit")) {
 					this.socket.close();
-					System.out.println("Client " + this.clientId
-							+ " has Disconnected with exit.");
+					lib.save(System.getProperty("user.dir") + "/Library/"
+							+ "serverLib.xml");
+					System.out.println("Client has Disconnected with exit.");
+					System.out.println("Thread Finished");
 				} else if (command.equalsIgnoreCase("getSongs")) {
 					sendSongs();
-				} else if (command.equalsIgnoreCase("getSong")) {
+				} else if (command.equalsIgnoreCase("aSong")) {
 					size = in.read(bytesRecieved);
-					String song = new String(bytesRecieved, 0, size);					
+					String song = new String(bytesRecieved, 0, size);
 					sendSong(song);
 				}
 			} catch (IOException | InterruptedException e) {
 				try {
 					this.socket.close();
-					System.out.println("CLient " + this.clientId
-							+ " has Disconnected.");
+					System.out.println("Thread Dead");
 				} catch (IOException e1) {
 				}
 			}
 		}
-		System.out.println("Thread Dead");
+		this.notifier.setConnected(false);
 	}
 
 	public void changeNotify() {
-		for (ClientThread client : this.clients) {
+		for (ClientThread client : clients) {
 			client.getNotifier().setRefreshFlag(true);
 		}
 	}

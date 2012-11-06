@@ -23,7 +23,6 @@ import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeModel;
 import javax.swing.tree.MutableTreeNode;
 
-import Extras.Popup;
 import Library.Album;
 import Library.Library;
 import Library.Song;
@@ -33,8 +32,7 @@ import cst420.media.MusicLibraryGui;
  * Purpose is to serve as the main gui and flow of control for the app.
  * 
  * @author James Harris
- * @version November 2 2012
- * new Gui?
+ * @version November 2 2012 new Gui?
  */
 @SuppressWarnings("serial")
 public class MusicApp extends MusicLibraryGui implements
@@ -54,7 +52,7 @@ public class MusicApp extends MusicLibraryGui implements
 		super(base);
 		try {
 			host = JOptionPane.showInputDialog(this, "What is the server ip?",
-					"wizardofmath.no-ip.org");
+					"localhost");
 			port = Integer.parseInt(JOptionPane.showInputDialog(this,
 					"What is the server port?", "8888"));
 			socket = new Socket(host, port);
@@ -158,7 +156,6 @@ public class MusicApp extends MusicLibraryGui implements
 			}
 			tree.addTreeSelectionListener(this);
 			tree.addTreeWillExpandListener(this);
-			new Popup("Library Reloaded!").start();
 		} catch (UnknownHostException e) {
 		} catch (IOException e) {
 		} catch (InterruptedException e) {
@@ -285,7 +282,7 @@ public class MusicApp extends MusicLibraryGui implements
 	}
 
 	private Song getSong(String label) throws IOException {
-		out.write("getSong".getBytes());
+		out.write("aSong".getBytes());
 		out.write(label.getBytes());
 		Socket tempSocket = new Socket(host, port + 6);
 		DataInputStream inPut = new DataInputStream(tempSocket.getInputStream());
@@ -399,8 +396,11 @@ public class MusicApp extends MusicLibraryGui implements
 		try {
 			out.write("remove".getBytes());
 			out.write(this.titleJTF.getText().getBytes());
-			out.write(this.albumJTF.getText().getBytes());
-			new Popup("Removed " + this.titleJTF.getText()).start();
+//			if (!this.titleJTF.getText().equalsIgnoreCase("")) {
+//				out.write(this.titleJTF.getText().getBytes());
+//			} else {
+//				out.write(this.albumJTF.getText().getBytes());
+//			}
 		} catch (IOException e1) {
 		}
 

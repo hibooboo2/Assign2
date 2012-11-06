@@ -19,14 +19,12 @@ public class FileRecieveThreadServer extends Thread {
 	private Socket socket;
 	private DataInputStream in;
 	private int idForClient;
-	private Library userLibrary;
 	private String title;
 	private ClientThread parent;
 
-	public FileRecieveThreadServer(Socket sock, String title, String author, String album, Library lib, ClientThread parent) {
+	public FileRecieveThreadServer(Socket sock, String title, String author, String album, ClientThread parent) {
 		socket = sock;
-		userLibrary = lib;
-		lib.addSong(title, author, album);
+		parent.getLib().addSong(title, author, album);
 		this.setTitle(title);
 		this.setParent(parent);
 
@@ -72,14 +70,6 @@ public class FileRecieveThreadServer extends Thread {
 		this.in = in;
 	}
 
-	public Library getUserLibrary() {
-		return userLibrary;
-	}
-
-	public void setUserLibrary(Library userLibrary) {
-		this.userLibrary = userLibrary;
-	}
-
 	public void run()  {
 		try {
 			in = new DataInputStream(socket.getInputStream());
@@ -109,8 +99,8 @@ public class FileRecieveThreadServer extends Thread {
 			}
 			outStream.close();
 			System.out.println("Download Successfully!");
-			userLibrary.findSong(title).setFile(fileName);
-			userLibrary.save(System.getProperty("user.dir") + "/Library/" + "serverLib.xml");
+			parent.getLib().findSong(title).setFile(fileName);
+			parent.getLib().save(System.getProperty("user.dir") + "/Library/" + "serverLib.xml");
 
 		} catch (Exception e) {
 			System.out.println("Error on downloading file!");

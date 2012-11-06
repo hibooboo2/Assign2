@@ -18,6 +18,7 @@ public class NotifyChangeToLib extends Thread {
 
 	private boolean refreshFlag;
 	private int port;
+	private boolean connected;
 
 	public boolean isRefreshFlag() {
 		return refreshFlag;
@@ -29,6 +30,7 @@ public class NotifyChangeToLib extends Thread {
 
 	public NotifyChangeToLib() {
 		this.refreshFlag = false;
+		this.connected = true;
 	}
 
 	public void run(){
@@ -38,15 +40,17 @@ public class NotifyChangeToLib extends Thread {
 			notifySocket = new ServerSocket(port);
 			System.out.println("notify socket made");
 			Socket notify =notifySocket.accept();
-			notifySocket.close();
 			DataOutputStream out = new DataOutputStream(notify.getOutputStream());
-			while(!notify.isClosed()){
+			notifySocket.close();
+			while(connected){
 				if(isRefreshFlag()){
-				out.writeUTF("refresh");
+				System.out.println("Enter");
+				out.write("notify".getBytes());
 				System.out.println("notified of lib change");
 				refreshFlag = false;
 				}
 			}
+			notify.close();
 			System.out.println("Notify Thread Killed");
 			
 		} catch (IOException e) {
@@ -63,5 +67,10 @@ public class NotifyChangeToLib extends Thread {
 
 	public void setPort(int port) {
 		this.port = port;
+	}
+
+	public void setConnected(boolean connected) {
+		this.connected = connected;
+		
 	}
 }

@@ -114,6 +114,23 @@ public class Library implements Serializable {
 		}
 	}
 
+	public void removeSong(String title) {
+		boolean removed = false;
+		for (Album alb : this.getAlbums()) {
+			for (Song song : alb.getSongs()) {
+				if (song.getTitle().equalsIgnoreCase(title)) {
+					alb.removeSong(title);
+					removed = true;
+					break;
+				}
+			}
+		}
+		if (!removed) {
+			this.removeAlbum(title);
+		}
+
+	}
+
 	public void save(String filename) {
 		try {
 			FileOutputStream xmlos = new FileOutputStream(filename);
@@ -176,7 +193,7 @@ public class Library implements Serializable {
 
 	public void addSong(String description) {
 		String[] song = description.split("\\Q$");
-		addSong(song[0],song[1],song[2]);
+		addSong(song[0], song[1], song[2]);
 	}
 
 }

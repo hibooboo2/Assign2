@@ -35,9 +35,9 @@ public class LibraryRefreshNotifier extends Thread {
 				if (read.equals("notify")) {
 					parent.treeRefresh();
 				}
-
 			}
 		} catch (IOException e) {
+			e.printStackTrace();
 		}
 
 	}
