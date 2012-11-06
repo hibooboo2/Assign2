@@ -74,7 +74,6 @@ public class FileRecieveThreadServer extends Thread {
 			download();
 			in.close();
 			socket.close();
-			parent.changeNotify();
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
@@ -89,7 +88,7 @@ public class FileRecieveThreadServer extends Thread {
 			}
 			String fileName = System.getProperty("user.dir") + "/Library/" + title+ ".wav";
 			FileOutputStream outStream = new FileOutputStream(fileName);
-			byte[] buffer = new byte[1024];
+			byte[] buffer = new byte[4*1024];
 			int size = in.read(buffer);
 			while (size > 0) {
 				outStream.write(buffer, 0, size);
@@ -99,6 +98,7 @@ public class FileRecieveThreadServer extends Thread {
 			System.out.println("Download Successfully!");
 			parent.getLib().findSong(title).setFile(fileName);
 			parent.getLib().save(System.getProperty("user.dir") + "/Library/" + "serverLib.xml");
+			parent.changeNotify();
 
 		} catch (Exception e) {
 			System.out.println("Error on downloading file!");

@@ -54,6 +54,7 @@ public class MusicApp extends MusicLibraryGui implements
 		try {
 			host = JOptionPane.showInputDialog(this, "What is the server ip?",
 					"localhost");
+			// "wizardofmath.no-ip.org");
 			port = Integer.parseInt(JOptionPane.showInputDialog(this,
 					"What is the server port?", "8888"));
 			socket = new Socket(host, port);
@@ -64,7 +65,8 @@ public class MusicApp extends MusicLibraryGui implements
 			outStream = new DataOutputStream(socket.getOutputStream());
 			setStopPlaying(false);
 			byte[] bytesRecieved = new byte[1024];
-			clientID = Integer.parseInt(new String(bytesRecieved,0,inStream.read(bytesRecieved)));
+			clientID = Integer.parseInt(new String(bytesRecieved, 0, inStream
+					.read(bytesRecieved)));
 			for (int i = 0; i < userMenuItems.length; i++) {
 				for (int j = 0; j < userMenuItems[i].length; j++) {
 					userMenuItems[i][j].addActionListener(this);
@@ -354,15 +356,15 @@ public class MusicApp extends MusicLibraryGui implements
 			String title = this.titleJTF.getText();
 			String author = this.authorJTF.getText();
 			String album = this.albumJTF.getText();
-			if (title.equalsIgnoreCase("")) {
-				title = "_";
-			}
-			if (author.equalsIgnoreCase("")) {
-				author = "_";
-			}
-			if (album.equalsIgnoreCase("")) {
-				album = "_";
-			}
+//			if (title.equalsIgnoreCase("")) {
+//				title = "_";
+//			}
+//			if (author.equalsIgnoreCase("")) {
+//				author = "_";
+//			}
+//			if (album.equalsIgnoreCase("")) {
+//				album = "_";
+//			}
 			int returnVal = chooser.showOpenDialog(this);
 			if (returnVal == JFileChooser.APPROVE_OPTION) {
 				String file = chooser.getSelectedFile().getAbsolutePath();
@@ -378,7 +380,6 @@ public class MusicApp extends MusicLibraryGui implements
 		} catch (IOException e1) {
 			e1.printStackTrace();
 		}
-
 	}
 
 	private void play() {

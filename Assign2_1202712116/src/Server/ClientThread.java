@@ -132,13 +132,13 @@ public class ClientThread extends Thread {
 				int size = in.read(bytesRecieved);
 				String command = new String(bytesRecieved, 0, size);
 				if (command.equalsIgnoreCase("add")) {
+					ServerSocket fileAddServer = new ServerSocket((port + 1));
 					size = in.read(bytesRecieved);
 					String title = new String(bytesRecieved, 0, size);
 					size = in.read(bytesRecieved);
 					String author = new String(bytesRecieved, 0, size);
 					size = in.read(bytesRecieved);
 					String album = new String(bytesRecieved, 0, size);
-					ServerSocket fileAddServer = new ServerSocket((port + 1));
 					FileRecieveThreadServer fileAddThread = new FileRecieveThreadServer(
 							fileAddServer.accept(), title, author, album, this);
 					fileAddThread.start();
