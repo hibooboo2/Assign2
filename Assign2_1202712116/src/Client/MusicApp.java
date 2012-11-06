@@ -34,6 +34,7 @@ import cst420.media.MusicLibraryGui;
  * 
  * @author James Harris
  * @version November 2 2012
+ * new Gui?
  */
 @SuppressWarnings("serial")
 public class MusicApp extends MusicLibraryGui implements
