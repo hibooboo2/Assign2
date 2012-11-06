@@ -5,8 +5,6 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.net.Socket;
 
-import Library.Library;
-
 /**
  * Purpose of this class is to receive the songs from a client.
  * 

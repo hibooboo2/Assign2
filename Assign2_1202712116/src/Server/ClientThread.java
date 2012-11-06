@@ -28,20 +28,23 @@ public class ClientThread extends Thread {
 	private String host;
 	private int port;
 	private NotifyChangeToLib notifier;
+	private int clientID;
 
 	public ClientThread(Socket sock, Library lib, Vector<ClientThread> clients,
-			int portNo) {
+			int portNo, int id) {
 
 		try {
+			this.setClientID(id);
 			this.port = portNo;
-			setNotifier(new NotifyChangeToLib());
-			notifier.setPort((port + 3));
-			notifier.start();
 			this.setSocket(sock);
 			this.setClients(clients);
 			this.setIn(new DataInputStream(this.socket.getInputStream()));
 			this.setOut(new DataOutputStream(this.socket.getOutputStream()));
 			this.setLib(lib);
+			out.write(Integer.toString(clientID).getBytes());
+			setNotifier(new NotifyChangeToLib(out));
+			notifier.setPort((port + 3));
+			notifier.start();
 
 		} catch (IOException e) {
 			e.printStackTrace();
@@ -87,6 +90,14 @@ public class ClientThread extends Thread {
 
 	public void setNotifier(NotifyChangeToLib notifier) {
 		this.notifier = notifier;
+	}
+
+	public int getClientID() {
+		return clientID;
+	}
+
+	public void setClientID(int clientID) {
+		this.clientID = clientID;
 	}
 
 	public Vector<ClientThread> getClients() {
@@ -174,6 +185,7 @@ public class ClientThread extends Thread {
 					this.socket.close();
 					System.out.println("Thread Dead");
 				} catch (IOException e1) {
+					e1.printStackTrace();
 				}
 			}
 		}
@@ -210,12 +222,13 @@ public class ClientThread extends Thread {
 			System.out.print("Done....");
 			tempSocket.close();
 		} catch (IOException e2) {
+			e2.printStackTrace();
 		}
 
 	}
 
 	private void sendSongs() throws IOException, InterruptedException {
-		ServerSocket tempServer = new ServerSocket((port + 5));
+		ServerSocket tempServer = new ServerSocket((port + 100 + clientID));
 		Socket tempSocket = tempServer.accept();
 		tempServer.close();
 		DataOutputStream outPut = new DataOutputStream(
@@ -228,7 +241,7 @@ public class ClientThread extends Thread {
 
 	private void sendSong(String title) throws IOException,
 			InterruptedException {
-		ServerSocket tempServer = new ServerSocket((port + 6));
+		ServerSocket tempServer = new ServerSocket((port + 10 + clientID));
 		Socket tempSocket = tempServer.accept();
 		tempServer.close();
 		DataOutputStream outPut = new DataOutputStream(

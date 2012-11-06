@@ -62,12 +62,14 @@ public class ConnectionListener extends Thread {
 			Vector<ClientThread> clients = new Vector<ClientThread>();
 			clients.trimToSize();
 			//new ConnectionListener().start();
+			int id = 0;
 			while (true) {
 				System.out.println("Threaded server waiting"
 						+ " for connects on port " + portNo);
 				Socket socket = serv.accept();
 				ClientThread client = new ClientThread(socket, lib, clients,
-						portNo);
+						portNo, id);
+				id++;
 				clients.addElement(client);
 				client.start();
 				System.out.println("Threaded server connected to client-");

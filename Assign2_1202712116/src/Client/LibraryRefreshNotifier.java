@@ -1,8 +1,6 @@
 package Client;
 
-import java.io.DataInputStream;
 import java.io.IOException;
-import java.net.Socket;
 
 /**
  * Purpose of this class is to allow the client to auto refresh when the library
@@ -21,18 +19,13 @@ public class LibraryRefreshNotifier extends Thread {
 
 	public void run() {
 		try {
-			@SuppressWarnings("resource")
-			Socket notifySocket = new Socket(parent.getHost(),
-					(parent.getPort() + 3));
-			DataInputStream in = new DataInputStream(
-					notifySocket.getInputStream());
 			byte[] bytesRead = new byte[1024];
 			String read;
 			int size;
-			while (!notifySocket.isClosed()) {
-				size = in.read(bytesRead);
+			while (!parent.getSocket().isClosed()) {
+				size = parent.getIn().read(bytesRead);
 				read = new String(bytesRead, 0, size);
-				if (read.equals("notify")) {
+				if (read.equalsIgnoreCase("notify")) {
 					parent.treeRefresh();
 				}
 			}
