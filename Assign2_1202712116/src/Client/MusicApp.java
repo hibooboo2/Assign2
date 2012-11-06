@@ -76,8 +76,6 @@ public class MusicApp extends MusicLibraryGui implements
 			System.out.println("Connected");
 
 		} catch (IOException | InterruptedException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
 		}
 
 	}
@@ -86,7 +84,7 @@ public class MusicApp extends MusicLibraryGui implements
 	@Deprecated
 	private Library getLibrary() throws UnknownHostException, IOException,
 			InterruptedException {
-		out.writeUTF("getLibrary");
+		out.write("getLibrary".getBytes());
 		Thread.sleep(200);
 		Socket libSocket = new Socket(host, (port + 4));
 		DataInputStream inPut = new DataInputStream(libSocket.getInputStream());
@@ -103,7 +101,6 @@ public class MusicApp extends MusicLibraryGui implements
 		while (size > 0) {
 			outStream.write(buffer, 0, size);
 			size = inPut.read(buffer);
-			System.out.println("Reading");
 		}
 		outStream.close();
 		libSocket.close();
@@ -113,7 +110,7 @@ public class MusicApp extends MusicLibraryGui implements
 	}
 
 	private Library getSongs() throws IOException, InterruptedException {
-		out.writeUTF("getSongs");
+		out.write("getSongs".getBytes());
 		Thread.sleep(200);
 		Socket tempSocket = new Socket(host, port + 5);
 		DataInputStream inPut = new DataInputStream(tempSocket.getInputStream());
@@ -123,13 +120,11 @@ public class MusicApp extends MusicLibraryGui implements
 		Library tempLib = new Library("Temp");
 		while (size > 0) {
 			songs += new String(bytestoRecieve, 0, size);
-			System.out.println(songs);
 			size = inPut.read(bytestoRecieve);
 		}
 		String[] songsSeperated = songs.split("\\Q#");
 		for (String song : songsSeperated) {
 			tempLib.addSong(song);
-			System.out.println("Song =" + new Song(song).toString());
 		}
 		tempSocket.close();
 		return tempLib;
@@ -150,7 +145,6 @@ public class MusicApp extends MusicLibraryGui implements
 						new DefaultMutableTreeNode(alb.getAlbum()), root,
 						model.getChildCount(root));
 				for (Song son : alb.getSongs()) {
-					System.out.println("Tree");
 					model.insertNodeInto(
 							new DefaultMutableTreeNode(son.getTitle()),
 							(MutableTreeNode) root.getChildAt(pos),
@@ -265,10 +259,8 @@ public class MusicApp extends MusicLibraryGui implements
 			DefaultMutableTreeNode node = (DefaultMutableTreeNode) tree
 					.getLastSelectedPathComponent();
 			String nodeLabel = (String) node.getUserObject();
-			System.out.println("Selected node labelled: " + nodeLabel);
 			setFields(nodeLabel);
 		} catch (Exception ex) {
-			ex.printStackTrace();
 		}
 		tree.addTreeSelectionListener(this);
 	}
@@ -292,8 +284,8 @@ public class MusicApp extends MusicLibraryGui implements
 	}
 
 	private Song getSong(String label) throws IOException {
-		out.writeUTF("getSong");
-		out.writeUTF(label);
+		out.write("getSong".getBytes());
+		out.write(label.getBytes());
 		Socket tempSocket = new Socket(host, port + 6);
 		DataInputStream inPut = new DataInputStream(tempSocket.getInputStream());
 		byte[] bytestoRecieve = new byte[1024];
@@ -301,7 +293,6 @@ public class MusicApp extends MusicLibraryGui implements
 		String song = new String();
 		while (size > 0) {
 			song += new String(bytestoRecieve, 0, size);
-			System.out.println(song);
 			size = inPut.read(bytestoRecieve);
 		}
 		tempSocket.close();
@@ -334,27 +325,14 @@ public class MusicApp extends MusicLibraryGui implements
 		}
 		// Refresh the tree
 		else if (e.getActionCommand().equals("Tree Refresh")) {
-			//treeRefresh();
-			test();
+			treeRefresh();
 
 		}
 
-	}
-
-	private void test() {
-		System.out.println("Test Selected");
-		try {
-			out.writeUTF("test");
-			out.write(this.titleJTF.getText().getBytes());
-			out.write(this.albumJTF.getText().getBytes());
-		} catch (IOException e1) {
-		}
-		
 	}
 
 	private void add() {
 		try {
-			System.out.println("Add Selected");
 			JFileChooser chooser = new JFileChooser();
 			chooser.setCurrentDirectory(new File(System.getProperty("user.dir")));
 			FileNameExtensionFilter filter = new FileNameExtensionFilter(
@@ -364,36 +342,33 @@ public class MusicApp extends MusicLibraryGui implements
 			String author = this.authorJTF.getText();
 			String album = this.albumJTF.getText();
 			if (title.equalsIgnoreCase("")) {
-				title = " ";
+				title = "_";
 			}
 			if (author.equalsIgnoreCase("")) {
-				author = " ";
+				author = "_";
 			}
 			if (album.equalsIgnoreCase("")) {
-				album = " ";
+				album = "_";
 			}
 			int returnVal = chooser.showOpenDialog(this);
 			if (returnVal == JFileChooser.APPROVE_OPTION) {
 				String file = chooser.getSelectedFile().getAbsolutePath();
-				out.writeUTF("add");
-				out.writeUTF(title);
-				out.writeUTF(author);
-				out.writeUTF(album);
+				out.write("add".getBytes());
+				out.write(title.getBytes());
+				out.write(author.getBytes());
+				out.write(album.getBytes());
 				this.fileUploader = new FileSendThreadClient(file, this,
 						new Socket(host, (port + 1)));
 				this.fileUploader.start();
 			}
 
 		} catch (IOException e1) {
-			// TODO Auto-generated catch block
-			e1.printStackTrace();
 		}
 
 	}
 
 	private void play() {
 		try {
-			System.out.println("Play Selected");
 			// get the currently selected node in the tree.
 			// if the user hasn't already selected a node for which
 			// there must be a wav file then exit ungracefully!
@@ -401,14 +376,13 @@ public class MusicApp extends MusicLibraryGui implements
 					.getLastSelectedPathComponent();
 			String nodeLabel = (String) node.getUserObject();
 			if (getPlayer() != null && getPlayer().isAlive()) {
-				System.out.println("Already playing: Interrupting the thread");
 				stopPlaying = true;
 				Thread.sleep(500); // give the thread time to complete
 				stopPlaying = false;
 			}
 			if (!(getSongs().findSong(nodeLabel).getFile().equalsIgnoreCase(""))) {
-				out.writeUTF("play");
-				out.writeUTF(nodeLabel);
+				out.write("play".getBytes());
+				out.write(nodeLabel.getBytes());
 				FileRecieveThreadClient fileRecieveSong = new FileRecieveThreadClient(
 						new Socket(host, port + 2), nodeLabel, this);
 				fileRecieveSong.start();
@@ -417,16 +391,14 @@ public class MusicApp extends MusicLibraryGui implements
 															// this
 			// exception
 			System.out.println("MusicThread sleep was interrupted.");
-			ex.printStackTrace();
 		}
 	}
 
 	private void remove() {
-		System.out.println("Remove Selected");
 		try {
-			out.writeUTF("remove");
-			out.writeUTF(this.titleJTF.getText());
-			out.writeUTF(this.albumJTF.getText());
+			out.write("remove".getBytes());
+			out.write(this.titleJTF.getText().getBytes());
+			out.write(this.albumJTF.getText().getBytes());
 			new Popup("Removed " + this.titleJTF.getText()).start();
 		} catch (IOException e1) {
 		}
@@ -435,8 +407,7 @@ public class MusicApp extends MusicLibraryGui implements
 
 	private void restore() {
 		try {
-			System.out.println("Restore selected, initializing tree");
-			out.writeUTF("restore");
+			out.write("restore".getBytes());
 		} catch (IOException e1) {
 		}
 
@@ -444,8 +415,7 @@ public class MusicApp extends MusicLibraryGui implements
 
 	private void save() {
 		try {
-			System.out.println("Save Selected");
-			out.writeUTF("save");
+			out.write("save".getBytes());
 		} catch (IOException e1) {
 		}
 
@@ -453,7 +423,7 @@ public class MusicApp extends MusicLibraryGui implements
 
 	private void exit() {
 		try {
-			out.writeUTF("exit");
+			out.write("exit".getBytes());
 		} catch (IOException e1) {
 		}
 		System.exit(0);
@@ -470,8 +440,6 @@ public class MusicApp extends MusicLibraryGui implements
 				model.removeNodeFromParent(next);
 			}
 		} catch (Exception ex) {
-			System.out.println("Exception while trying to clear tree:");
-			ex.printStackTrace();
 		}
 		tree.addTreeSelectionListener(this);
 		tree.addTreeWillExpandListener(this);
@@ -486,7 +454,6 @@ public class MusicApp extends MusicLibraryGui implements
 			}
 			MusicApp ltree = new MusicApp(name);
 		} catch (Exception ex) {
-			ex.printStackTrace();
 		}
 	}
 }

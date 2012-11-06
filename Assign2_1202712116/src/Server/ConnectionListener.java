@@ -56,7 +56,6 @@ public class ConnectionListener extends Thread {
 			lib = lib.restore(System.getProperty("user.dir") + "/Library/"
 					+ "serverLib.xml");
 			ServerSocket serv = new ServerSocket(portNo);
-			System.out.println(portNo);
 			Vector<ClientThread> clients = new Vector<ClientThread>();
 			new ConnectionListener().start();
 			while (true) {

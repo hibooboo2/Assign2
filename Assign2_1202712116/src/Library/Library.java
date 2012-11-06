@@ -148,10 +148,9 @@ public class Library implements Serializable {
 	public Song findSong(String label) {
 		// checks for song with title first
 		for (Album alb : this.albums) {
-			for (Song son : alb.getSongs()) {
-				if (son.getTitle().equals(label)) {
-					System.out.println("From Find Song "+son.toString());
-					return son;
+			for (Song song : alb.getSongs()) {
+				if (song.getTitle().equals(label)) {
+					return song;
 				}
 			}
 		}

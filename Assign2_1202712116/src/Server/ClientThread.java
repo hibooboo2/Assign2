@@ -35,7 +35,6 @@ public class ClientThread extends Thread {
 
 		try {
 			this.port = portNo;
-			System.out.println(port);
 			setNotifier(new NotifyChangeToLib());
 			notifier.setPort((port + 3));
 			notifier.start();
@@ -125,13 +124,19 @@ public class ClientThread extends Thread {
 	}
 
 	public void run() {
+		byte[] bytesRecieved = new byte[1024];
 		while (!this.socket.isClosed()) {
 			try {
-				String command = in.readUTF();
+
+				int size = in.read(bytesRecieved);
+				String command = new String(bytesRecieved, 0, size);
 				if (command.equalsIgnoreCase("add")) {
-					String title = this.in.readUTF();
-					String author = this.in.readUTF();
-					String album = this.in.readUTF();
+					size = in.read(bytesRecieved);
+					String title = new String(bytesRecieved, 0, size);
+					size = in.read(bytesRecieved);
+					String author = new String(bytesRecieved, 0, size);
+					size = in.read(bytesRecieved);
+					String album = new String(bytesRecieved, 0, size);
 					ServerSocket fileAddServer = new ServerSocket((port + 1));
 					FileRecieveThreadServer fileAddThread = new FileRecieveThreadServer(
 							fileAddServer.accept(), title, author, album, lib,
@@ -139,13 +144,16 @@ public class ClientThread extends Thread {
 					fileAddThread.start();
 					fileAddServer.close();
 				} else if (command.equalsIgnoreCase("remove")) {
-					String title = this.in.readUTF();
-					String album = this.in.readUTF();
+					size = in.read(bytesRecieved);
+					String title = new String(bytesRecieved, 0, size);
+					size = in.read(bytesRecieved);
+					String album = new String(bytesRecieved, 0, size);
 					lib.removeSong(title, album);
 					changeNotify();
 
 				} else if (command.equalsIgnoreCase("play")) {
-					String title = in.readUTF();
+					size = in.read(bytesRecieved);
+					String title = new String(bytesRecieved, 0, size);
 					String filename = lib.findSong(title).getFile();
 					ServerSocket fileSendServer = new ServerSocket((port + 2));
 					FileSendThreadServer fileSendThread = new FileSendThreadServer(
@@ -167,13 +175,9 @@ public class ClientThread extends Thread {
 				} else if (command.equalsIgnoreCase("getSongs")) {
 					sendSongs();
 				} else if (command.equalsIgnoreCase("getSong")) {
-					sendSong(in.readUTF());
-				} else if (command.equalsIgnoreCase("test")) {
-					byte[] bytesRecieved = new byte[1024];
-					int size = in.read(bytesRecieved);
-					System.out.println(new String(bytesRecieved, 0, size));
 					size = in.read(bytesRecieved);
-					System.out.println(new String(bytesRecieved, 0, size));
+					String song = new String(bytesRecieved, 0, size);					
+					sendSong(song);
 				}
 			} catch (IOException | InterruptedException e) {
 				try {
@@ -228,8 +232,7 @@ public class ClientThread extends Thread {
 		DataOutputStream outPut = new DataOutputStream(
 				tempSocket.getOutputStream());
 		for (String song : lib.getAllSongs()) {
-			outPut.writeBytes(song);
-			System.out.println(song);
+			outPut.write(song.getBytes());
 		}
 		tempSocket.close();
 	}
@@ -241,7 +244,7 @@ public class ClientThread extends Thread {
 		tempServer.close();
 		DataOutputStream outPut = new DataOutputStream(
 				tempSocket.getOutputStream());
-		outPut.writeBytes(lib.findSong(title).toString());
+		outPut.write(lib.findSong(title).toString().getBytes());
 		tempSocket.close();
 	}
 }
