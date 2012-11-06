@@ -127,6 +127,7 @@ public class MusicApp extends MusicLibraryGui implements
 			songs += new String(bytestoRecieve, 0, size);
 			size = inPut.read(bytestoRecieve);
 		}
+		System.out.println(songs);
 		String[] songsSeperated = songs.split("\\Q#");
 		for (String song : songsSeperated) {
 			tempLib.addSong(song);
@@ -353,25 +354,22 @@ public class MusicApp extends MusicLibraryGui implements
 			FileNameExtensionFilter filter = new FileNameExtensionFilter(
 					"Wav files", "wav");
 			chooser.setFileFilter(filter);
-			String title = this.titleJTF.getText();
-			String author = this.authorJTF.getText();
-			String album = this.albumJTF.getText();
-//			if (title.equalsIgnoreCase("")) {
-//				title = "_";
-//			}
-//			if (author.equalsIgnoreCase("")) {
-//				author = "_";
-//			}
-//			if (album.equalsIgnoreCase("")) {
-//				album = "_";
-//			}
+			String song = this.titleJTF.getText() + "$"
+					+ this.authorJTF.getText() + "$" + this.albumJTF.getText();
+			// if (title.equalsIgnoreCase("")) {
+			// title = "_";
+			// }
+			// if (author.equalsIgnoreCase("")) {
+			// author = "_";
+			// }
+			// if (album.equalsIgnoreCase("")) {
+			// album = "_";
+			// }
 			int returnVal = chooser.showOpenDialog(this);
 			if (returnVal == JFileChooser.APPROVE_OPTION) {
 				String file = chooser.getSelectedFile().getAbsolutePath();
 				outStream.write("add".getBytes());
-				outStream.write(title.getBytes());
-				outStream.write(author.getBytes());
-				outStream.write(album.getBytes());
+				outStream.write(song.getBytes());
 				this.fileUploader = new FileSendThreadClient(file, this,
 						new Socket(host, (port + 1)));
 				this.fileUploader.start();

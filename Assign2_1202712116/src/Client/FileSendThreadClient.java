@@ -81,12 +81,15 @@ public class FileSendThreadClient extends Thread {
 		File file = new File(fileName);
 		System.out.print("Keep Going....");
 		FileInputStream fileStream = new FileInputStream(file);
-		byte[] buffer = new byte[4*1024];
-		int size = fileStream.read(buffer);;
-		while (size > 0) {
+		byte[] buffer = new byte[4 * 1024];
+		int size;
+		while (true) {
 			System.out.println("Before =");
-			out.write(buffer, 0, size);
 			size = fileStream.read(buffer);
+			if (!(size > 0)) {
+				break;
+			}
+			out.write(buffer, 0, size);
 			System.out.print(" =After ");
 		}
 		fileStream.close();

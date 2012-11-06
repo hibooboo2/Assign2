@@ -71,14 +71,14 @@ public class FileRecieveThreadClient extends Thread {
 
 	private void download() {
 		try {
-			File theDir = new File(System.getProperty("user.dir") + "/Temp/");
+			File theDir = new File(System.getProperty("user.dir") + "/Temp"+parent.getClientID()+"/" );
 			boolean recieve = false;
 			if (!theDir.exists()) {
 				System.out.println("creating directory: "
-						+ System.getProperty("user.dir") + "/Temp/");
+						+ System.getProperty("user.dir") + "/Temp"+parent.getClientID()+"/" );
 				theDir.mkdir();
 			}
-			fileName = System.getProperty("user.dir") + "/Temp/" + "temp.wav";
+			fileName = System.getProperty("user.dir") + "/Temp"+parent.getClientID()+"/" + "temp.wav";
 			FileOutputStream outStream = new FileOutputStream(fileName);
 			byte[] buffer = new byte[1024];
 			int size = in.read(buffer);
