@@ -24,11 +24,17 @@ public class FileSendThreadClient extends Thread {
 	private String fileName;
 	private MusicApp parent;
 
-	public FileSendThreadClient(String file, MusicApp parent, Socket socket) throws UnknownHostException, IOException {
-		this.fileName = file;
-		this.setParent(parent);
-		this.socket = socket;
-		out = new DataOutputStream(socket.getOutputStream());
+	public FileSendThreadClient(String file, MusicApp parent, Socket socket) {
+
+		try {
+			this.fileName = file;
+			this.setParent(parent);
+			this.socket = socket;
+			out = new DataOutputStream(socket.getOutputStream());
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 	}
 
 	public Socket getSocket() {
@@ -67,7 +73,6 @@ public class FileSendThreadClient extends Thread {
 		try {
 			streamFile();
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 	}
@@ -76,18 +81,21 @@ public class FileSendThreadClient extends Thread {
 		File file = new File(fileName);
 		System.out.print("Keep Going....");
 		FileInputStream fileStream = new FileInputStream(file);
-		byte[] buffer = new byte[1024];
-		int size = fileStream.read(buffer);
-		while (size > 0) {
-			out.write(buffer, 0, size);
+		byte[] buffer = new byte[4 * 1024];
+		int size;
+		while (true) {
+			System.out.println("Before =");
 			size = fileStream.read(buffer);
+			if (!(size > 0)) {
+				break;
+			}
+			out.write(buffer, 0, size);
+			System.out.print(" =After ");
 		}
-		out.flush();
-		out.close();
 		fileStream.close();
-		System.out.print("Done....");
 		this.socket.close();
-		new Popup("Upload Complete of " +fileName).start();
+		System.out.print("Done....");
+
 	}
 
 }

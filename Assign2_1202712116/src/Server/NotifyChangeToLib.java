@@ -2,8 +2,6 @@ package Server;
 
 import java.io.DataOutputStream;
 import java.io.IOException;
-import java.net.ServerSocket;
-import java.net.Socket;
 
 /**
  * Purpose of this class is to notify each client
@@ -18,6 +16,8 @@ public class NotifyChangeToLib extends Thread {
 
 	private boolean refreshFlag;
 	private int port;
+	private boolean connected;
+	private DataOutputStream out;
 
 	public boolean isRefreshFlag() {
 		return refreshFlag;
@@ -25,24 +25,22 @@ public class NotifyChangeToLib extends Thread {
 
 	public void setRefreshFlag(boolean refreshFlag) {
 		this.refreshFlag = refreshFlag;
+		
 	}
 
-	public NotifyChangeToLib() {
+	public NotifyChangeToLib(DataOutputStream out) {
 		this.refreshFlag = false;
+		this.connected = true;
+		this.out = out;
+		
 	}
 
 	public void run(){
-		ServerSocket notifySocket;
 		try {
-			System.out.println("Try to make socket to notify");
-			notifySocket = new ServerSocket(port);
-			System.out.println("notify socket made");
-			Socket notify =notifySocket.accept();
-			notifySocket.close();
-			DataOutputStream out = new DataOutputStream(notify.getOutputStream());
-			while(!notify.isClosed()){
+			while(connected){
 				if(isRefreshFlag()){
-				out.writeUTF("refresh");
+				System.out.println("Enter");
+				out.write("notify".getBytes());
 				System.out.println("notified of lib change");
 				refreshFlag = false;
 				}
@@ -63,5 +61,10 @@ public class NotifyChangeToLib extends Thread {
 
 	public void setPort(int port) {
 		this.port = port;
+	}
+
+	public void setConnected(boolean connected) {
+		this.connected = connected;
+		
 	}
 }

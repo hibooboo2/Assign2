@@ -5,8 +5,6 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.net.Socket;
 
-import Library.Library;
-
 /**
  * Purpose of this class is to receive the songs from a client.
  * 
@@ -19,14 +17,12 @@ public class FileRecieveThreadServer extends Thread {
 	private Socket socket;
 	private DataInputStream in;
 	private int idForClient;
-	private Library userLibrary;
 	private String title;
 	private ClientThread parent;
 
-	public FileRecieveThreadServer(Socket sock, String title, String author, String album, Library lib, ClientThread parent) {
+	public FileRecieveThreadServer(Socket sock, String title, String author, String album, ClientThread parent) {
 		socket = sock;
-		userLibrary = lib;
-		lib.addSong(title, author, album);
+		parent.getLib().addSong(title, author, album);
 		this.setTitle(title);
 		this.setParent(parent);
 
@@ -72,21 +68,12 @@ public class FileRecieveThreadServer extends Thread {
 		this.in = in;
 	}
 
-	public Library getUserLibrary() {
-		return userLibrary;
-	}
-
-	public void setUserLibrary(Library userLibrary) {
-		this.userLibrary = userLibrary;
-	}
-
 	public void run()  {
 		try {
 			in = new DataInputStream(socket.getInputStream());
 			download();
 			in.close();
 			socket.close();
-			parent.changeNotify();
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
@@ -101,7 +88,7 @@ public class FileRecieveThreadServer extends Thread {
 			}
 			String fileName = System.getProperty("user.dir") + "/Library/" + title+ ".wav";
 			FileOutputStream outStream = new FileOutputStream(fileName);
-			byte[] buffer = new byte[1024];
+			byte[] buffer = new byte[4*1024];
 			int size = in.read(buffer);
 			while (size > 0) {
 				outStream.write(buffer, 0, size);
@@ -109,8 +96,9 @@ public class FileRecieveThreadServer extends Thread {
 			}
 			outStream.close();
 			System.out.println("Download Successfully!");
-			userLibrary.findSong(title).setFile(fileName);
-			userLibrary.save(System.getProperty("user.dir") + "/Library/" + "serverLib.xml");
+			parent.getLib().findSong(title).setFile(fileName);
+			parent.getLib().save(System.getProperty("user.dir") + "/Library/" + "serverLib.xml");
+			parent.changeNotify();
 
 		} catch (Exception e) {
 			System.out.println("Error on downloading file!");

@@ -21,7 +21,6 @@ import Library.Library;
 public class ClientThread extends Thread {
 
 	private Socket socket;
-	private int clientId;
 	private DataInputStream in;
 	private DataOutputStream out;
 	private Library lib;
@@ -29,21 +28,23 @@ public class ClientThread extends Thread {
 	private String host;
 	private int port;
 	private NotifyChangeToLib notifier;
+	private int clientID;
 
-	public ClientThread(Socket sock, int i, Library lib,
-			Vector<ClientThread> clients, int portNo) {
+	public ClientThread(Socket sock, Library lib, Vector<ClientThread> clients,
+			int portNo, int id) {
 
 		try {
+			this.setClientID(id);
 			this.port = portNo;
-			setNotifier(new NotifyChangeToLib());
-			notifier.setPort((port + 3));
-			notifier.start();
 			this.setSocket(sock);
 			this.setClients(clients);
 			this.setIn(new DataInputStream(this.socket.getInputStream()));
 			this.setOut(new DataOutputStream(this.socket.getOutputStream()));
-			this.setClientId(i);
 			this.setLib(lib);
+			out.write(Integer.toString(clientID).getBytes());
+			setNotifier(new NotifyChangeToLib(out));
+			notifier.setPort((port + 3));
+			notifier.start();
 
 		} catch (IOException e) {
 			e.printStackTrace();
@@ -57,14 +58,6 @@ public class ClientThread extends Thread {
 
 	public void setSocket(Socket socket) {
 		this.socket = socket;
-	}
-
-	public int getClientId() {
-		return clientId;
-	}
-
-	public void setClientId(int clientId) {
-		this.clientId = clientId;
 	}
 
 	public int getPort() {
@@ -99,6 +92,14 @@ public class ClientThread extends Thread {
 		this.notifier = notifier;
 	}
 
+	public int getClientID() {
+		return clientID;
+	}
+
+	public void setClientID(int clientID) {
+		this.clientID = clientID;
+	}
+
 	public Vector<ClientThread> getClients() {
 		return clients;
 	}
@@ -131,24 +132,21 @@ public class ClientThread extends Thread {
 				int size = in.read(bytesRecieved);
 				String command = new String(bytesRecieved, 0, size);
 				if (command.equalsIgnoreCase("add")) {
+					
+					System.out.println("Download Start!");
 					size = in.read(bytesRecieved);
-					String title = new String(bytesRecieved, 0, size);
-					size = in.read(bytesRecieved);
-					String author = new String(bytesRecieved, 0, size);
-					size = in.read(bytesRecieved);
-					String album = new String(bytesRecieved, 0, size);
+					String song = new String(bytesRecieved,0,size);
+					String[] splitsong = song.split("\\Q$");
 					ServerSocket fileAddServer = new ServerSocket((port + 1));
 					FileRecieveThreadServer fileAddThread = new FileRecieveThreadServer(
-							fileAddServer.accept(), title, author, album, lib,
-							this);
+							fileAddServer.accept(), splitsong[0], splitsong[1], splitsong[2], this);
 					fileAddThread.start();
 					fileAddServer.close();
 				} else if (command.equalsIgnoreCase("remove")) {
 					size = in.read(bytesRecieved);
 					String title = new String(bytesRecieved, 0, size);
-					size = in.read(bytesRecieved);
-					String album = new String(bytesRecieved, 0, size);
-					lib.removeSong(title, album);
+					this.lib.removeSong(title);
+					System.out.println("Removed " + title);
 					changeNotify();
 
 				} else if (command.equalsIgnoreCase("play")) {
@@ -170,29 +168,31 @@ public class ClientThread extends Thread {
 					sendSongs();
 				} else if (command.equalsIgnoreCase("exit")) {
 					this.socket.close();
-					System.out.println("Client " + this.clientId
-							+ " has Disconnected with exit.");
+					lib.save(System.getProperty("user.dir") + "/Library/"
+							+ "serverLib.xml");
+					System.out.println("Client has Disconnected with exit.");
+					System.out.println("Thread Finished");
 				} else if (command.equalsIgnoreCase("getSongs")) {
 					sendSongs();
-				} else if (command.equalsIgnoreCase("getSong")) {
+				} else if (command.equalsIgnoreCase("aSong")) {
 					size = in.read(bytesRecieved);
-					String song = new String(bytesRecieved, 0, size);					
+					String song = new String(bytesRecieved, 0, size);
 					sendSong(song);
 				}
 			} catch (IOException | InterruptedException e) {
 				try {
 					this.socket.close();
-					System.out.println("CLient " + this.clientId
-							+ " has Disconnected.");
+					System.out.println("Thread Dead");
 				} catch (IOException e1) {
+					e1.printStackTrace();
 				}
 			}
 		}
-		System.out.println("Thread Dead");
+		this.notifier.setConnected(false);
 	}
 
 	public void changeNotify() {
-		for (ClientThread client : this.clients) {
+		for (ClientThread client : clients) {
 			client.getNotifier().setRefreshFlag(true);
 		}
 	}
@@ -221,12 +221,13 @@ public class ClientThread extends Thread {
 			System.out.print("Done....");
 			tempSocket.close();
 		} catch (IOException e2) {
+			e2.printStackTrace();
 		}
 
 	}
 
 	private void sendSongs() throws IOException, InterruptedException {
-		ServerSocket tempServer = new ServerSocket((port + 5));
+		ServerSocket tempServer = new ServerSocket((port + 100 + clientID));
 		Socket tempSocket = tempServer.accept();
 		tempServer.close();
 		DataOutputStream outPut = new DataOutputStream(
@@ -239,7 +240,7 @@ public class ClientThread extends Thread {
 
 	private void sendSong(String title) throws IOException,
 			InterruptedException {
-		ServerSocket tempServer = new ServerSocket((port + 6));
+		ServerSocket tempServer = new ServerSocket((port + 10 + clientID));
 		Socket tempSocket = tempServer.accept();
 		tempServer.close();
 		DataOutputStream outPut = new DataOutputStream(

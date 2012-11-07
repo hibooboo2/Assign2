@@ -2,6 +2,7 @@ package Server;
 
 import java.io.File;
 import java.net.ServerSocket;
+import java.net.Socket;
 import java.util.Vector;
 
 import javax.swing.JOptionPane;
@@ -11,20 +12,23 @@ import Library.Library;
 /**
  * Purpose of this class is to server as the main server that listens for new
  * connections from clients.
+ * 
  * @author James Harris
  * @version November 2 2012
  */
 
 public class ConnectionListener extends Thread {
-	
-	public void run(){
-		JOptionPane.showMessageDialog(null, "Close this box to close the server.");
+
+	public void run() {
+		JOptionPane.showMessageDialog(null,
+				"Close this box to close the server.");
 		System.exit(0);
 	}
 
 	@SuppressWarnings("resource")
 	public static void main(String args[]) {
 		int portNo;
+		MakeMockLibrary.main(null);
 		if (args.length >= 1) {
 			portNo = Integer.parseInt(args[0]);
 		} else {
@@ -38,7 +42,6 @@ public class ConnectionListener extends Thread {
 			theDir.mkdir();
 		}
 		System.out.println("Server Started. Listening For connections...");
-		int id = 0;
 		try {
 
 			Library lib = new Library();
@@ -57,15 +60,19 @@ public class ConnectionListener extends Thread {
 					+ "serverLib.xml");
 			ServerSocket serv = new ServerSocket(portNo);
 			Vector<ClientThread> clients = new Vector<ClientThread>();
-			new ConnectionListener().start();
+			clients.trimToSize();
+			//new ConnectionListener().start();
+			int id = 0;
 			while (true) {
-				System.out
-						.println("Threaded server waiting for connects on port "
-								+ portNo);
-				clients.add(new ClientThread(serv.accept(), id++, lib, clients,
-						portNo));
-				clients.lastElement().start();
-				System.out.println("Threaded server connected to client-" + id);
+				System.out.println("Threaded server waiting"
+						+ " for connects on port " + portNo);
+				Socket socket = serv.accept();
+				ClientThread client = new ClientThread(socket, lib, clients,
+						portNo, id);
+				id++;
+				clients.addElement(client);
+				client.start();
+				System.out.println("Threaded server connected to client-");
 			}
 		} catch (Exception e) {
 			e.printStackTrace();

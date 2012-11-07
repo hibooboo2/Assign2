@@ -23,7 +23,6 @@ import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeModel;
 import javax.swing.tree.MutableTreeNode;
 
-import Extras.Popup;
 import Library.Album;
 import Library.Library;
 import Library.Song;
@@ -33,7 +32,7 @@ import cst420.media.MusicLibraryGui;
  * Purpose is to serve as the main gui and flow of control for the app.
  * 
  * @author James Harris
- * @version November 2 2012
+ * @version November 2 2012 new Gui?
  */
 @SuppressWarnings("serial")
 public class MusicApp extends MusicLibraryGui implements
@@ -42,27 +41,32 @@ public class MusicApp extends MusicLibraryGui implements
 	private PlayWavThread player = null;
 	private boolean stopPlaying;
 	private Socket socket;
-	private DataInputStream in;
-	private DataOutputStream out;
+	private DataInputStream inStream;
+	private DataOutputStream outStream;
 	private FileSendThreadClient fileUploader;
 	private String host;
 	private LibraryRefreshNotifier treeRefresher;
 	private int port;
+	private int clientID;
 
 	public MusicApp(String base) {
 		super(base);
 		try {
 			host = JOptionPane.showInputDialog(this, "What is the server ip?",
-					"wizardofmath.no-ip.org");
+					"localhost");
+			// "wizardofmath.no-ip.org");
 			port = Integer.parseInt(JOptionPane.showInputDialog(this,
 					"What is the server port?", "8888"));
 			socket = new Socket(host, port);
 			Thread.sleep(200);
 			treeRefresher = new LibraryRefreshNotifier(this);
 			treeRefresher.start();
-			in = new DataInputStream(socket.getInputStream());
-			out = new DataOutputStream(socket.getOutputStream());
+			inStream = new DataInputStream(socket.getInputStream());
+			outStream = new DataOutputStream(socket.getOutputStream());
 			setStopPlaying(false);
+			byte[] bytesRecieved = new byte[1024];
+			clientID = Integer.parseInt(new String(bytesRecieved, 0, inStream
+					.read(bytesRecieved)));
 			for (int i = 0; i < userMenuItems.length; i++) {
 				for (int j = 0; j < userMenuItems[i].length; j++) {
 					userMenuItems[i][j].addActionListener(this);
@@ -76,6 +80,7 @@ public class MusicApp extends MusicLibraryGui implements
 			System.out.println("Connected");
 
 		} catch (IOException | InterruptedException e) {
+			e.printStackTrace();
 		}
 
 	}
@@ -84,7 +89,7 @@ public class MusicApp extends MusicLibraryGui implements
 	@Deprecated
 	private Library getLibrary() throws UnknownHostException, IOException,
 			InterruptedException {
-		out.write("getLibrary".getBytes());
+		outStream.write("getLibrary".getBytes());
 		Thread.sleep(200);
 		Socket libSocket = new Socket(host, (port + 4));
 		DataInputStream inPut = new DataInputStream(libSocket.getInputStream());
@@ -110,9 +115,9 @@ public class MusicApp extends MusicLibraryGui implements
 	}
 
 	private Library getSongs() throws IOException, InterruptedException {
-		out.write("getSongs".getBytes());
+		outStream.write("getSongs".getBytes());
 		Thread.sleep(200);
-		Socket tempSocket = new Socket(host, port + 5);
+		Socket tempSocket = new Socket(host, port + 100 + getClientID());
 		DataInputStream inPut = new DataInputStream(tempSocket.getInputStream());
 		byte[] bytestoRecieve = new byte[1024];
 		int size = inPut.read(bytestoRecieve);
@@ -122,6 +127,7 @@ public class MusicApp extends MusicLibraryGui implements
 			songs += new String(bytestoRecieve, 0, size);
 			size = inPut.read(bytestoRecieve);
 		}
+		System.out.println(songs);
 		String[] songsSeperated = songs.split("\\Q#");
 		for (String song : songsSeperated) {
 			tempLib.addSong(song);
@@ -157,10 +163,12 @@ public class MusicApp extends MusicLibraryGui implements
 			}
 			tree.addTreeSelectionListener(this);
 			tree.addTreeWillExpandListener(this);
-			new Popup("Library Reloaded!").start();
 		} catch (UnknownHostException e) {
+			e.printStackTrace();
 		} catch (IOException e) {
+			e.printStackTrace();
 		} catch (InterruptedException e) {
+			e.printStackTrace();
 		}
 
 	}
@@ -190,11 +198,11 @@ public class MusicApp extends MusicLibraryGui implements
 	}
 
 	public DataInputStream getIn() {
-		return in;
+		return inStream;
 	}
 
 	public void setIn(DataInputStream in) {
-		this.in = in;
+		this.inStream = in;
 	}
 
 	public JTextField getTitleJTF() {
@@ -210,7 +218,7 @@ public class MusicApp extends MusicLibraryGui implements
 	}
 
 	public DataOutputStream getOut() {
-		return out;
+		return outStream;
 	}
 
 	public PlayWavThread getPlayer() {
@@ -222,7 +230,7 @@ public class MusicApp extends MusicLibraryGui implements
 	}
 
 	public void setOut(DataOutputStream out) {
-		this.out = out;
+		this.outStream = out;
 	}
 
 	public FileSendThreadClient getFileHandler() {
@@ -231,6 +239,14 @@ public class MusicApp extends MusicLibraryGui implements
 
 	public void setFileHandler(FileSendThreadClient fileHandler) {
 		this.fileUploader = fileHandler;
+	}
+
+	public int getClientID() {
+		return clientID;
+	}
+
+	public void setClientID(int clientID) {
+		this.clientID = clientID;
 	}
 
 	public Socket getSocket() {
@@ -284,9 +300,9 @@ public class MusicApp extends MusicLibraryGui implements
 	}
 
 	private Song getSong(String label) throws IOException {
-		out.write("getSong".getBytes());
-		out.write(label.getBytes());
-		Socket tempSocket = new Socket(host, port + 6);
+		outStream.write("aSong".getBytes());
+		outStream.write(label.getBytes());
+		Socket tempSocket = new Socket(host, port + 10 + clientID);
 		DataInputStream inPut = new DataInputStream(tempSocket.getInputStream());
 		byte[] bytestoRecieve = new byte[1024];
 		int size = inPut.read(bytestoRecieve);
@@ -338,33 +354,30 @@ public class MusicApp extends MusicLibraryGui implements
 			FileNameExtensionFilter filter = new FileNameExtensionFilter(
 					"Wav files", "wav");
 			chooser.setFileFilter(filter);
-			String title = this.titleJTF.getText();
-			String author = this.authorJTF.getText();
-			String album = this.albumJTF.getText();
-			if (title.equalsIgnoreCase("")) {
-				title = "_";
-			}
-			if (author.equalsIgnoreCase("")) {
-				author = "_";
-			}
-			if (album.equalsIgnoreCase("")) {
-				album = "_";
-			}
+			String song = this.titleJTF.getText() + "$"
+					+ this.authorJTF.getText() + "$" + this.albumJTF.getText();
+			// if (title.equalsIgnoreCase("")) {
+			// title = "_";
+			// }
+			// if (author.equalsIgnoreCase("")) {
+			// author = "_";
+			// }
+			// if (album.equalsIgnoreCase("")) {
+			// album = "_";
+			// }
 			int returnVal = chooser.showOpenDialog(this);
 			if (returnVal == JFileChooser.APPROVE_OPTION) {
 				String file = chooser.getSelectedFile().getAbsolutePath();
-				out.write("add".getBytes());
-				out.write(title.getBytes());
-				out.write(author.getBytes());
-				out.write(album.getBytes());
+				outStream.write("add".getBytes());
+				outStream.write(song.getBytes());
 				this.fileUploader = new FileSendThreadClient(file, this,
 						new Socket(host, (port + 1)));
 				this.fileUploader.start();
 			}
 
 		} catch (IOException e1) {
+			e1.printStackTrace();
 		}
-
 	}
 
 	private void play() {
@@ -381,8 +394,8 @@ public class MusicApp extends MusicLibraryGui implements
 				stopPlaying = false;
 			}
 			if (!(getSongs().findSong(nodeLabel).getFile().equalsIgnoreCase(""))) {
-				out.write("play".getBytes());
-				out.write(nodeLabel.getBytes());
+				outStream.write("play".getBytes());
+				outStream.write(nodeLabel.getBytes());
 				FileRecieveThreadClient fileRecieveSong = new FileRecieveThreadClient(
 						new Socket(host, port + 2), nodeLabel, this);
 				fileRecieveSong.start();
@@ -390,41 +403,49 @@ public class MusicApp extends MusicLibraryGui implements
 		} catch (InterruptedException | IOException ex) { // sleep may throw
 															// this
 			// exception
+			ex.printStackTrace();
 			System.out.println("MusicThread sleep was interrupted.");
 		}
 	}
 
 	private void remove() {
 		try {
-			out.write("remove".getBytes());
-			out.write(this.titleJTF.getText().getBytes());
-			out.write(this.albumJTF.getText().getBytes());
-			new Popup("Removed " + this.titleJTF.getText()).start();
+			outStream.write("remove".getBytes());
+			outStream.write(this.titleJTF.getText().getBytes());
+			// if (!this.titleJTF.getText().equalsIgnoreCase("")) {
+			// out.write(this.titleJTF.getText().getBytes());
+			// } else {
+			// out.write(this.albumJTF.getText().getBytes());
+			// }
 		} catch (IOException e1) {
+			e1.printStackTrace();
 		}
 
 	}
 
 	private void restore() {
 		try {
-			out.write("restore".getBytes());
+			outStream.write("restore".getBytes());
 		} catch (IOException e1) {
+			e1.printStackTrace();
 		}
 
 	}
 
 	private void save() {
 		try {
-			out.write("save".getBytes());
+			outStream.write("save".getBytes());
 		} catch (IOException e1) {
+			e1.printStackTrace();
 		}
 
 	}
 
 	private void exit() {
 		try {
-			out.write("exit".getBytes());
+			outStream.write("exit".getBytes());
 		} catch (IOException e1) {
+			e1.printStackTrace();
 		}
 		System.exit(0);
 	}
@@ -440,6 +461,7 @@ public class MusicApp extends MusicLibraryGui implements
 				model.removeNodeFromParent(next);
 			}
 		} catch (Exception ex) {
+			ex.printStackTrace();
 		}
 		tree.addTreeSelectionListener(this);
 		tree.addTreeWillExpandListener(this);
@@ -454,6 +476,7 @@ public class MusicApp extends MusicLibraryGui implements
 			}
 			MusicApp ltree = new MusicApp(name);
 		} catch (Exception ex) {
+			ex.printStackTrace();
 		}
 	}
 }

@@ -1,6 +1,5 @@
 package Library;
 
-import java.io.File;
 import java.io.Serializable;
 import java.util.Vector;
 
@@ -64,8 +63,6 @@ public class Album implements Serializable {
 	public boolean removeSong(String song) {
 		for (Song son : this.getSongs()) {
 			if (son.getTitle().equals(song)) {
-				File f1 = new File(son.getFile());
-				f1.delete();
 				this.getSongs().remove(son);
 				this.getSongs().trimToSize();
 				return true;
