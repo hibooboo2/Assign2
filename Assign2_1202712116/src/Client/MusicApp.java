@@ -403,6 +403,7 @@ public class MusicApp extends MusicLibraryGui implements
 		} catch (InterruptedException | IOException ex) { // sleep may throw
 															// this
 			// exception
+			ex.printStackTrace();
 			System.out.println("MusicThread sleep was interrupted.");
 		}
 	}

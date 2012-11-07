@@ -132,11 +132,12 @@ public class ClientThread extends Thread {
 				int size = in.read(bytesRecieved);
 				String command = new String(bytesRecieved, 0, size);
 				if (command.equalsIgnoreCase("add")) {
-					ServerSocket fileAddServer = new ServerSocket((port + 1));
+					
 					System.out.println("Download Start!");
 					size = in.read(bytesRecieved);
 					String song = new String(bytesRecieved,0,size);
 					String[] splitsong = song.split("\\Q$");
+					ServerSocket fileAddServer = new ServerSocket((port + 1));
 					FileRecieveThreadServer fileAddThread = new FileRecieveThreadServer(
 							fileAddServer.accept(), splitsong[0], splitsong[1], splitsong[2], this);
 					fileAddThread.start();
