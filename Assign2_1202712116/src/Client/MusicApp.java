@@ -48,6 +48,9 @@ public class MusicApp extends MusicLibraryGui implements
 	private LibraryRefreshNotifier treeRefresher;
 	private int port;
 	private int clientID;
+	private RecieveLibraryThread libraryRecieve;
+	private Socket songsSocket;
+	private DataInputStream songsinPut;
 
 	public MusicApp(String base) {
 		super(base);
@@ -59,8 +62,7 @@ public class MusicApp extends MusicLibraryGui implements
 					"What is the server port?", "8888"));
 			socket = new Socket(host, port);
 			Thread.sleep(200);
-			treeRefresher = new LibraryRefreshNotifier(this);
-			treeRefresher.start();
+			
 			inStream = new DataInputStream(socket.getInputStream());
 			outStream = new DataOutputStream(socket.getOutputStream());
 			setStopPlaying(false);
@@ -74,9 +76,15 @@ public class MusicApp extends MusicLibraryGui implements
 			}
 			tree.addTreeSelectionListener(this);
 			tree.addTreeWillExpandListener(this);
-			this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+			songsSocket = new Socket(host, port + 100 + getClientID());
+			songsinPut = new DataInputStream(songsSocket.getInputStream());
 			treeRefresh();
+			this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 			setVisible(true);
+			// this.libraryRecieve = new RecieveLibraryThread(this);
+			// this.libraryRecieve.start();
+			treeRefresher = new LibraryRefreshNotifier(this);
+			treeRefresher.start();
 			System.out.println("Connected");
 
 		} catch (IOException | InterruptedException e) {
@@ -114,62 +122,61 @@ public class MusicApp extends MusicLibraryGui implements
 
 	}
 
-	private Library getSongs() throws IOException, InterruptedException {
-		outStream.write("getSongs".getBytes());
-		Thread.sleep(200);
-		Socket tempSocket = new Socket(host, port + 100 + getClientID());
-		DataInputStream inPut = new DataInputStream(tempSocket.getInputStream());
-		byte[] bytestoRecieve = new byte[1024];
-		int size = inPut.read(bytestoRecieve);
-		String songs = new String();
-		Library tempLib = new Library("Temp");
-		while (size > 0) {
-			songs += new String(bytestoRecieve, 0, size);
-			size = inPut.read(bytestoRecieve);
+	private Library getSongs() {
+		try {
+			outStream.write("getSongs".getBytes());
+			Thread.sleep(200);
+			byte[] bytestoRecieve = new byte[1024];
+			String songs = new String();
+			int size;
+			size = songsinPut.read(bytestoRecieve);
+			System.out.println("Read ");
+			Library tempLib = new Library("Temp");
+			while ((size > 0)
+					&& !(new String(bytestoRecieve, 0, size)
+							.equalsIgnoreCase("end"))) {
+				songs += new String(bytestoRecieve, 0, size);
+				size = songsinPut.read(bytestoRecieve);
+			}
+			System.out.println(songs + " After ");
+			String[] songsSeperated = songs.split("\\Q#");
+			for (String song : songsSeperated) {
+				tempLib.addSong(song);
+			}
+			return tempLib;
+		} catch (IOException | InterruptedException e) {
+			// TODO Auto-generated catch block
+			System.out.println("Error on get songs.");
+			e.printStackTrace();
+			return null;
 		}
-		System.out.println(songs);
-		String[] songsSeperated = songs.split("\\Q#");
-		for (String song : songsSeperated) {
-			tempLib.addSong(song);
-		}
-		tempSocket.close();
-		return tempLib;
+
 	}
 
 	public void treeRefresh() {
 
-		try {
-			tree.removeTreeSelectionListener(this);
-			tree.removeTreeWillExpandListener(this);
-			DefaultTreeModel model = (DefaultTreeModel) tree.getModel();
-			DefaultMutableTreeNode root = (DefaultMutableTreeNode) model
-					.getRoot();
-			clearTree(root, model);
-			int pos = 0;
-			for (Album alb : getSongs().getAlbums()) {
+		tree.removeTreeSelectionListener(this);
+		tree.removeTreeWillExpandListener(this);
+		DefaultTreeModel model = (DefaultTreeModel) tree.getModel();
+		DefaultMutableTreeNode root = (DefaultMutableTreeNode) model.getRoot();
+		clearTree(root, model);
+		int pos = 0;
+		for (Album alb : getSongs().getAlbums()) {
+			model.insertNodeInto(new DefaultMutableTreeNode(alb.getAlbum()),
+					root, model.getChildCount(root));
+			for (Song son : alb.getSongs()) {
 				model.insertNodeInto(
-						new DefaultMutableTreeNode(alb.getAlbum()), root,
-						model.getChildCount(root));
-				for (Song son : alb.getSongs()) {
-					model.insertNodeInto(
-							new DefaultMutableTreeNode(son.getTitle()),
-							(MutableTreeNode) root.getChildAt(pos),
-							model.getChildCount(root.getChildAt(pos)));
-				}
-				pos++;
+						new DefaultMutableTreeNode(son.getTitle()),
+						(MutableTreeNode) root.getChildAt(pos),
+						model.getChildCount(root.getChildAt(pos)));
 			}
-			for (int r = 0; r < tree.getRowCount(); r++) {
-				tree.expandRow(r);
-			}
-			tree.addTreeSelectionListener(this);
-			tree.addTreeWillExpandListener(this);
-		} catch (UnknownHostException e) {
-			e.printStackTrace();
-		} catch (IOException e) {
-			e.printStackTrace();
-		} catch (InterruptedException e) {
-			e.printStackTrace();
+			pos++;
 		}
+		for (int r = 0; r < tree.getRowCount(); r++) {
+			tree.expandRow(r);
+		}
+		tree.addTreeSelectionListener(this);
+		tree.addTreeWillExpandListener(this);
 
 	}
 

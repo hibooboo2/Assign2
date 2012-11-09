@@ -2,6 +2,8 @@ package Client;
 
 import java.io.IOException;
 
+import Extras.Popup;
+
 /**
  * Purpose of this class is to allow the client to auto refresh when the library
  * is changed by another client. ?
@@ -26,12 +28,17 @@ public class LibraryRefreshNotifier extends Thread {
 				size = parent.getIn().read(bytesRead);
 				read = new String(bytesRead, 0, size);
 				if (read.equalsIgnoreCase("notify")) {
+					
 					parent.treeRefresh();
+					new Popup("Rerfesh happened" + parent.getClientID()).start();
 				}
 			}
+			new Popup("Rerfesh left" + parent.getClientID()).start();
 		} catch (IOException e) {
 			e.printStackTrace();
+			new Popup("Rerfesh left" + parent.getClientID()).start();
 		}
+		new Popup("Rerfesh left" + parent.getClientID()).start();
 
 	}
 
