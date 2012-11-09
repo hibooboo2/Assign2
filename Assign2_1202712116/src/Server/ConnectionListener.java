@@ -52,7 +52,7 @@ public class ConnectionListener extends Thread {
 						+ System.getProperty("user.dir") + "/Library/"
 						+ "serverLib.xml");
 				lib.setLibTitle("serverLib");
-				lib.addSong("TEST", "TEST AUTHOR", "ALBUM", "NONE");
+				lib.addSong("TEST", "AUTHOR", "ALBUM", "NONE");
 				lib.save(System.getProperty("user.dir") + "/Library/"
 						+ "serverLib.xml");
 			}

@@ -29,11 +29,14 @@ public class ClientThread extends Thread {
 	private int port;
 	private NotifyChangeToLib notifier;
 	private int clientID;
+	private SendLibraryThread librarySender;
 
 	public ClientThread(Socket sock, Library lib, Vector<ClientThread> clients,
 			int portNo, int id) {
 
 		try {
+			this.librarySender = new SendLibraryThread(this);
+			librarySender.start();
 			this.setClientID(id);
 			this.port = portNo;
 			this.setSocket(sock);
@@ -45,6 +48,7 @@ public class ClientThread extends Thread {
 			setNotifier(new NotifyChangeToLib(out));
 			notifier.setPort((port + 3));
 			notifier.start();
+			
 
 		} catch (IOException e) {
 			e.printStackTrace();
@@ -132,14 +136,15 @@ public class ClientThread extends Thread {
 				int size = in.read(bytesRecieved);
 				String command = new String(bytesRecieved, 0, size);
 				if (command.equalsIgnoreCase("add")) {
-					
+
 					System.out.println("Download Start!");
 					size = in.read(bytesRecieved);
-					String song = new String(bytesRecieved,0,size);
+					String song = new String(bytesRecieved, 0, size);
 					String[] splitsong = song.split("\\Q$");
 					ServerSocket fileAddServer = new ServerSocket((port + 1));
 					FileRecieveThreadServer fileAddThread = new FileRecieveThreadServer(
-							fileAddServer.accept(), splitsong[0], splitsong[1], splitsong[2], this);
+							fileAddServer.accept(), splitsong[0], splitsong[1],
+							splitsong[2], this);
 					fileAddThread.start();
 					fileAddServer.close();
 				} else if (command.equalsIgnoreCase("remove")) {
@@ -189,6 +194,7 @@ public class ClientThread extends Thread {
 			}
 		}
 		this.notifier.setConnected(false);
+		this.librarySender.setConnected(false);
 	}
 
 	public void changeNotify() {
@@ -227,15 +233,18 @@ public class ClientThread extends Thread {
 	}
 
 	private void sendSongs() throws IOException, InterruptedException {
-		ServerSocket tempServer = new ServerSocket((port + 100 + clientID));
-		Socket tempSocket = tempServer.accept();
-		tempServer.close();
-		DataOutputStream outPut = new DataOutputStream(
-				tempSocket.getOutputStream());
-		for (String song : lib.getAllSongs()) {
-			outPut.write(song.getBytes());
-		}
-		tempSocket.close();
+		// ServerSocket tempServer = new ServerSocket((port + 100 + clientID));
+		// Socket tempSocket = tempServer.accept();
+		// tempServer.close();
+		// DataOutputStream outPut = new DataOutputStream(
+		// tempSocket.getOutputStream());
+		// for (String song : lib.getAllSongs()) {
+		// outPut.write(song.getBytes());
+		// }
+		// tempSocket.close();
+		boolean result = librarySender.setSend(true);
+		System.out.println("SongSendThread flagset " + result);
+		//librarySender.setSend(true);
 	}
 
 	private void sendSong(String title) throws IOException,
