@@ -8,8 +8,6 @@ import javax.sound.sampled.AudioSystem;
 import javax.sound.sampled.DataLine;
 import javax.sound.sampled.SourceDataLine;
 
-import Extras.Popup;
-
 /**
  * Purpose this class is used to play the music.
  * 
@@ -33,7 +31,6 @@ public class PlayWavThread extends Thread {
 		try {
 			Thread.sleep(200); // wait 200 milliseconds before playing the
 			// file.
-			new Popup("Playing the wav file: " + aTitle).start();
 			audioStream = AudioSystem.getAudioInputStream(new File(aTitle));
 			audioFormat = audioStream.getFormat();
 			DataLine.Info i = new DataLine.Info(SourceDataLine.class,

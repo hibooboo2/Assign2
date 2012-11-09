@@ -48,7 +48,6 @@ public class MusicApp extends MusicLibraryGui implements
 	private LibraryRefreshNotifier treeRefresher;
 	private int port;
 	private int clientID;
-	private RecieveLibraryThread libraryRecieve;
 	private Socket songsSocket;
 	private DataInputStream songsinPut;
 
