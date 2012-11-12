@@ -28,7 +28,7 @@ public class ConnectionListener extends Thread {
 	@SuppressWarnings("resource")
 	public static void main(String args[]) {
 		int portNo;
-		MakeMockLibrary.main(null);
+		MakeMockLibrary.makeMockLib();
 		if (args.length >= 1) {
 			portNo = Integer.parseInt(args[0]);
 		} else {

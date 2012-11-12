@@ -28,17 +28,12 @@ public class LibraryRefreshNotifier extends Thread {
 				size = parent.getIn().read(bytesRead);
 				read = new String(bytesRead, 0, size);
 				if (read.equalsIgnoreCase("notify")) {
-					
 					parent.treeRefresh();
-					new Popup("Rerfesh happened" + parent.getClientID()).start();
 				}
 			}
-			new Popup("Rerfesh left" + parent.getClientID()).start();
 		} catch (IOException e) {
 			e.printStackTrace();
-			new Popup("Rerfesh left" + parent.getClientID()).start();
 		}
-		new Popup("Rerfesh left" + parent.getClientID()).start();
 
 	}
 
