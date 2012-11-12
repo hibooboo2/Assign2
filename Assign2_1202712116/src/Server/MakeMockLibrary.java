@@ -80,22 +80,22 @@ public class MakeMockLibrary {
 		}
 	}
 
-	// public static void makeMockLib() {
-	// String liblocation = "D:/MEDIA/MUSIC/WAV/";
-	// File theDir = new File(liblocation);
-	// if (!theDir.exists()) {
-	// System.out.println("creating directory: " + liblocation);
-	// theDir.mkdir();
-	// }
-	// Library lib = new Library("serverLib");
-	// lib.addSong("Song 1", "Sweet", "Album 1");
-	// lib.addSong("Song 2", "Coolio", "Album 1");
-	// lib.addSong("Song 3", "Cool", "Album 2");
-	// lib.addSong("Song 4", "Cool", "Album 2");
-	// lib.addSong("Song 5", "Cool", "Album 3");
-	// lib.save(liblocation + "serverLib.xml");
-	// lib = lib.restore(liblocation + "serverLib.xml");
-	// }
+	 public static void makeMockLib() {
+	 String liblocation = "D:/MEDIA/MUSIC/WAV/";
+	 File theDir = new File(liblocation);
+	 if (!theDir.exists()) {
+	 System.out.println("creating directory: " + liblocation);
+	 theDir.mkdir();
+	 }
+	 Library lib = new Library("serverLib");
+	 lib.addSong("Song 1", "Sweet", "Album 1");
+	 lib.addSong("Song 2", "Coolio", "Album 1");
+	 lib.addSong("Song 3", "Cool", "Album 2");
+	 lib.addSong("Song 4", "Cool", "Album 2");
+	 lib.addSong("Song 5", "Cool", "Album 3");
+	 lib.save(liblocation + "serverLib.xml");
+	 lib = lib.restore(liblocation + "serverLib.xml");
+	 }
 
 	public static void main(String noargs[]) throws IOException {
 		Writer output = null;
