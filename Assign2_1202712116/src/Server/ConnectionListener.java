@@ -24,22 +24,31 @@ public class ConnectionListener extends Thread {
 				"Close this box to close the server.");
 		System.exit(0);
 	}
+	
+	 public static void makeMockLib() {
+		 String liblocation = System.getProperty("user.dir") + "/Library/";
+		 File theDir = new File(liblocation);
+		 if (!theDir.exists()) {
+		 System.out.println("creating directory: " + liblocation);
+		 theDir.mkdir();
+		 }
+		 Library lib = new Library("serverLib");
+		 lib.addSong("Song 1", "Sweet", "Album 1");
+		 lib.addSong("Song 2", "Coolio", "Album 1");
+		 lib.addSong("Song 3", "Cool", "Album 2");
+		 lib.addSong("Song 4", "Cool", "Album 2");
+		 lib.addSong("Song 5", "Cool", "Album 3");
+		 lib.save(liblocation + "serverLib.xml");
+		 }
 
 	@SuppressWarnings("resource")
 	public static void main(String args[]) {
 		int portNo;
-		MakeMockLibrary.makeMockLib();
 		if (args.length >= 1) {
 			portNo = Integer.parseInt(args[0]);
 		} else {
 			portNo = Integer.parseInt(JOptionPane.showInputDialog(null,
 					"What port do you want to use?", "8888"));
-		}
-		File theDir = new File(System.getProperty("user.dir") + "/Library/");
-		if (!theDir.exists()) {
-			System.out.println("creating directory: "
-					+ System.getProperty("user.dir") + "/Library/");
-			theDir.mkdir();
 		}
 		System.out.println("Server Started. Listening For connections...");
 		try {
@@ -51,17 +60,14 @@ public class ConnectionListener extends Thread {
 				System.out.println("creating Library: "
 						+ System.getProperty("user.dir") + "/Library/"
 						+ "serverLib.xml");
-				lib.setLibTitle("serverLib");
-				lib.addSong("TEST", "AUTHOR", "ALBUM", "NONE");
-				lib.save(System.getProperty("user.dir") + "/Library/"
-						+ "serverLib.xml");
+				makeMockLib();
 			}
 			lib = lib.restore(System.getProperty("user.dir") + "/Library/"
 					+ "serverLib.xml");
 			ServerSocket serv = new ServerSocket(portNo);
 			Vector<ClientThread> clients = new Vector<ClientThread>();
 			clients.trimToSize();
-			//new ConnectionListener().start();
+			new ConnectionListener().start();
 			int id = 0;
 			while (true) {
 				System.out.println("Threaded server waiting"

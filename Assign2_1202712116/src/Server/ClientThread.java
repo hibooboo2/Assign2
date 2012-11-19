@@ -136,34 +136,12 @@ public class ClientThread extends Thread {
 				int size = in.read(bytesRecieved);
 				String command = new String(bytesRecieved, 0, size);
 				if (command.equalsIgnoreCase("add")) {
-
-					System.out.println("Download Start!");
-					size = in.read(bytesRecieved);
-					String song = new String(bytesRecieved, 0, size);
-					String[] splitsong = song.split("\\Q$");
-					ServerSocket fileAddServer = new ServerSocket((port + 1));
-					FileRecieveThreadServer fileAddThread = new FileRecieveThreadServer(
-							fileAddServer.accept(), splitsong[0], splitsong[1],
-							splitsong[2], this);
-					fileAddThread.start();
-					fileAddServer.close();
+					add(size, bytesRecieved);
 				} else if (command.equalsIgnoreCase("remove")) {
-					size = in.read(bytesRecieved);
-					String title = new String(bytesRecieved, 0, size);
-					this.lib.removeSong(title);
-					System.out.println("Removed " + title);
-					changeNotify();
+					remove(size, bytesRecieved);
 
 				} else if (command.equalsIgnoreCase("play")) {
-					size = in.read(bytesRecieved);
-					String title = new String(bytesRecieved, 0, size);
-					String filename = lib.findSong(title).getFile();
-					ServerSocket fileSendServer = new ServerSocket((port + 2));
-					FileSendThreadServer fileSendThread = new FileSendThreadServer(
-							fileSendServer.accept());
-					fileSendThread.setFileName(filename);
-					fileSendThread.start();
-					fileSendServer.close();
+					play(size, bytesRecieved);
 				} else if (command.equalsIgnoreCase("save")) {
 					lib.save(System.getProperty("user.dir") + "/Library/"
 							+ "serverLib.xml");
@@ -195,6 +173,40 @@ public class ClientThread extends Thread {
 		}
 		this.notifier.setConnected(false);
 		this.librarySender.setConnected(false);
+	}
+
+	private void add(int size,byte[] bytesRecieved) throws IOException {
+		System.out.println("Download Start!");
+		size = in.read(bytesRecieved);
+		String song = new String(bytesRecieved, 0, size);
+		String[] splitsong = song.split("\\Q$");
+		ServerSocket fileAddServer = new ServerSocket((port + 1));
+		FileRecieveThreadServer fileAddThread = new FileRecieveThreadServer(
+				fileAddServer.accept(), splitsong[0], splitsong[1],
+				splitsong[2], this);
+		fileAddThread.start();
+		fileAddServer.close();
+	}
+
+	private void remove(int size, byte[] bytesRecieved) throws IOException {
+		size = in.read(bytesRecieved);
+		String title = new String(bytesRecieved, 0, size);
+		this.lib.removeSong(title);
+		System.out.println("Removed " + title);
+		changeNotify();
+	}
+
+	private void play(int size, byte[] bytesRecieved) throws IOException {
+		size = in.read(bytesRecieved);
+		String title = new String(bytesRecieved, 0, size);
+		String filename = lib.findSong(title).getFile();
+		ServerSocket fileSendServer = new ServerSocket((port + 2));
+		FileSendThreadServer fileSendThread = new FileSendThreadServer(
+				fileSendServer.accept());
+		fileSendThread.setFileName(filename);
+		fileSendThread.start();
+		fileSendServer.close();
+		
 	}
 
 	public void changeNotify() {

@@ -360,17 +360,8 @@ public class MusicApp extends MusicLibraryGui implements
 			FileNameExtensionFilter filter = new FileNameExtensionFilter(
 					"Wav files", "wav");
 			chooser.setFileFilter(filter);
-			String song = this.titleJTF.getText() + "$"
-					+ this.authorJTF.getText() + "$" + this.albumJTF.getText();
-			// if (title.equalsIgnoreCase("")) {
-			// title = "_";
-			// }
-			// if (author.equalsIgnoreCase("")) {
-			// author = "_";
-			// }
-			// if (album.equalsIgnoreCase("")) {
-			// album = "_";
-			// }
+			String song = this.titleJTF.getText()+ " $"
+					+ this.authorJTF.getText() + " $" + this.albumJTF.getText() +" ";
 			int returnVal = chooser.showOpenDialog(this);
 			if (returnVal == JFileChooser.APPROVE_OPTION) {
 				String file = chooser.getSelectedFile().getAbsolutePath();
@@ -417,12 +408,10 @@ public class MusicApp extends MusicLibraryGui implements
 	private void remove() {
 		try {
 			outStream.write("remove".getBytes());
-			outStream.write(this.titleJTF.getText().getBytes());
-			// if (!this.titleJTF.getText().equalsIgnoreCase("")) {
-			// out.write(this.titleJTF.getText().getBytes());
-			// } else {
-			// out.write(this.albumJTF.getText().getBytes());
-			// }
+			DefaultMutableTreeNode node = (DefaultMutableTreeNode) tree
+					.getLastSelectedPathComponent();
+			String nodeLabel = (String) node.getUserObject();
+			outStream.write(nodeLabel.getBytes());
 		} catch (IOException e1) {
 			e1.printStackTrace();
 		}
