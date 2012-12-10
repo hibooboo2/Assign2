@@ -30,25 +30,33 @@ public class ClientThread extends Thread {
 	private NotifyChangeToLib notifier;
 	private int clientID;
 	private SendLibraryThread librarySender;
+	private String type;
 
 	public ClientThread(Socket sock, Library lib, Vector<ClientThread> clients,
 			int portNo, int id) {
 
 		try {
-			this.librarySender = new SendLibraryThread(this);
-			librarySender.start();
+			this.setIn(new DataInputStream(sock.getInputStream()));
+			this.setOut(new DataOutputStream(sock.getOutputStream()));
 			this.setClientID(id);
 			this.port = portNo;
 			this.setSocket(sock);
 			this.setClients(clients);
-			this.setIn(new DataInputStream(this.socket.getInputStream()));
-			this.setOut(new DataOutputStream(this.socket.getOutputStream()));
 			this.setLib(lib);
-			out.write(Integer.toString(clientID).getBytes());
-			setNotifier(new NotifyChangeToLib(out));
-			notifier.setPort((port + 3));
-			notifier.start();
-			
+			byte[] bytestoRecieve = new byte[1024];
+			int num = in.read(bytestoRecieve);
+			String type = new String(bytestoRecieve, 0, num);
+			if (type.equalsIgnoreCase("java")) {
+				this.type = "java";
+				this.librarySender = new SendLibraryThread(this);
+				librarySender.start();
+				out.write(Integer.toString(clientID).getBytes());
+				setNotifier(new NotifyChangeToLib(out));
+				notifier.setPort((port + 3));
+				notifier.start();
+			} else if (type.equalsIgnoreCase("objc")) {
+				this.type = "objc";
+			}
 
 		} catch (IOException e) {
 			e.printStackTrace();
@@ -129,6 +137,16 @@ public class ClientThread extends Thread {
 	}
 
 	public void run() {
+		if (type.equalsIgnoreCase("java")) {
+			System.out.print("Java connected");
+			runJava();
+		} else if (type.equalsIgnoreCase("objc")) {
+			System.out.print("C connected");
+			runObjc();
+		}
+	}
+
+	private void runJava() {
 		byte[] bytesRecieved = new byte[1024];
 		while (!this.socket.isClosed()) {
 			try {
@@ -173,9 +191,35 @@ public class ClientThread extends Thread {
 		}
 		this.notifier.setConnected(false);
 		this.librarySender.setConnected(false);
+
 	}
 
-	private void add(int size,byte[] bytesRecieved) throws IOException {
+	private void runObjc() {
+		// TODO Auto-generated method stub
+		byte[] bytesRecieved = new byte[1024];
+		boolean go = true;
+		System.out.println("While loop started for c");
+		while (go) {
+			try {
+				int size = in.read(bytesRecieved);
+				String recieved = new String(bytesRecieved, 0, size);
+				String[] command = recieved.split("\\Q^");
+				if (command[0].equalsIgnoreCase("")){
+					
+				}
+			} catch (IOException e) {
+				try {
+					this.socket.close();
+					System.out.println("Thread Dead");
+					go = false;
+				} catch (IOException e1) {
+					e1.printStackTrace();
+				}
+			}
+		}
+	}
+
+	private void add(int size, byte[] bytesRecieved) throws IOException {
 		System.out.println("Download Start!");
 		size = in.read(bytesRecieved);
 		String song = new String(bytesRecieved, 0, size);
@@ -206,7 +250,7 @@ public class ClientThread extends Thread {
 		fileSendThread.setFileName(filename);
 		fileSendThread.start();
 		fileSendServer.close();
-		
+
 	}
 
 	public void changeNotify() {
@@ -256,7 +300,7 @@ public class ClientThread extends Thread {
 		// tempSocket.close();
 		boolean result = librarySender.setSend(true);
 		System.out.println("SongSendThread flagset " + result);
-		//librarySender.setSend(true);
+		// librarySender.setSend(true);
 	}
 
 	private void sendSong(String title) throws IOException,

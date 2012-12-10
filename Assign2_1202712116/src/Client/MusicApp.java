@@ -64,6 +64,7 @@ public class MusicApp extends MusicLibraryGui implements
 			
 			inStream = new DataInputStream(socket.getInputStream());
 			outStream = new DataOutputStream(socket.getOutputStream());
+			outStream.write("java".getBytes());
 			setStopPlaying(false);
 			byte[] bytesRecieved = new byte[1024];
 			clientID = Integer.parseInt(new String(bytesRecieved, 0, inStream
