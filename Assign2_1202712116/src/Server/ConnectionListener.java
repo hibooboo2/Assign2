@@ -54,14 +54,15 @@ public class ConnectionListener extends Thread {
 		try {
 
 			Library lib = new Library();
-			File theLib = new File(System.getProperty("user.dir") + "/Library/"
-					+ "serverLib.xml");
-			if (!theLib.exists()) {
-				System.out.println("creating Library: "
-						+ System.getProperty("user.dir") + "/Library/"
-						+ "serverLib.xml");
-				makeMockLib();
-			}
+//			File theLib = new File(System.getProperty("user.dir") + "/Library/"
+//					+ "serverLib.xml");
+//			if (!theLib.exists()) {
+//				System.out.println("creating Library: "
+//						+ System.getProperty("user.dir") + "/Library/"
+//						+ "serverLib.xml");
+//				makeMockLib();
+//			}
+			makeMockLib();
 			lib = lib.restore(System.getProperty("user.dir") + "/Library/"
 					+ "serverLib.xml");
 			ServerSocket serv = new ServerSocket(portNo);

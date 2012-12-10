@@ -164,6 +164,9 @@ public class Library implements Serializable {
 
 	public Song findSong(String label) {
 		// checks for song with title first
+		if (label.contains("$")){
+			label = label.split("\\Q$")[0];
+		}
 		for (Album alb : this.albums) {
 			for (Song song : alb.getSongs()) {
 				if (song.getTitle().equals(label)) {

@@ -47,7 +47,7 @@ public class ClientThread extends Thread {
 			int num = in.read(bytestoRecieve);
 			String type = new String(bytestoRecieve, 0, num);
 			if (type.equalsIgnoreCase("java")) {
-				this.type = "java";
+				this.setType("java");
 				this.librarySender = new SendLibraryThread(this);
 				librarySender.start();
 				out.write(Integer.toString(clientID).getBytes());
@@ -55,7 +55,7 @@ public class ClientThread extends Thread {
 				notifier.setPort((port + 3));
 				notifier.start();
 			} else if (type.equalsIgnoreCase("objc")) {
-				this.type = "objc";
+				this.setType("objc");
 			}
 
 		} catch (IOException e) {
@@ -104,6 +104,14 @@ public class ClientThread extends Thread {
 		this.notifier = notifier;
 	}
 
+	public String getType() {
+		return type;
+	}
+
+	public void setType(String type) {
+		this.type = type;
+	}
+
 	public int getClientID() {
 		return clientID;
 	}
@@ -137,10 +145,10 @@ public class ClientThread extends Thread {
 	}
 
 	public void run() {
-		if (type.equalsIgnoreCase("java")) {
+		if (getType().equalsIgnoreCase("java")) {
 			System.out.print("Java connected");
 			runJava();
-		} else if (type.equalsIgnoreCase("objc")) {
+		} else if (getType().equalsIgnoreCase("objc")) {
 			System.out.print("C connected");
 			runObjc();
 		}
@@ -204,8 +212,24 @@ public class ClientThread extends Thread {
 				int size = in.read(bytesRecieved);
 				String recieved = new String(bytesRecieved, 0, size);
 				String[] command = recieved.split("\\Q^");
-				if (command[0].equalsIgnoreCase("")){
-					
+				System.out.println(command[1]);
+				if (command[0].equalsIgnoreCase("play")) {
+					// TODO Play needs to be made
+				} else if (command[0].equalsIgnoreCase("add")) {
+					lib.addSong(command[1]);
+				} else if (command[0].equalsIgnoreCase("remove")) {
+					remove(command[1].getBytes().length, command[1].getBytes());
+				} else if (command[0].equalsIgnoreCase("restore")) {
+					lib.restore(System.getProperty("user.dir") + "/Library/"
+							+ "serverLib.xml");
+				} else if (command[0].equalsIgnoreCase("save")) {
+					lib.save(System.getProperty("user.dir") + "/Library/"
+							+ "serverLib.xml");
+				} else if (command[0].equalsIgnoreCase("refresh")) {
+					refreshObjc();
+				} else if (command[0].equalsIgnoreCase("getsong")) {
+					System.out.println(lib.findSong(command[1]).toString());
+					out.write(lib.findSong(command[1]).toString().getBytes());
 				}
 			} catch (IOException e) {
 				try {
@@ -216,6 +240,15 @@ public class ClientThread extends Thread {
 					e1.printStackTrace();
 				}
 			}
+		}
+	}
+
+	private void refreshObjc() throws IOException {
+		String size = "" + this.lib.getAllSongs().size();
+		out.write(size.getBytes());
+		for (String song : lib.getAllSongs()) {
+			//song = song.split("\\Q$")[0];
+			out.write(song.getBytes());
 		}
 	}
 
@@ -233,7 +266,9 @@ public class ClientThread extends Thread {
 	}
 
 	private void remove(int size, byte[] bytesRecieved) throws IOException {
-		size = in.read(bytesRecieved);
+		if (type.equalsIgnoreCase("java")) {
+			size = in.read(bytesRecieved);
+		}
 		String title = new String(bytesRecieved, 0, size);
 		this.lib.removeSong(title);
 		System.out.println("Removed " + title);
@@ -255,7 +290,8 @@ public class ClientThread extends Thread {
 
 	public void changeNotify() {
 		for (ClientThread client : clients) {
-			client.getNotifier().setRefreshFlag(true);
+			if (client.getType().equalsIgnoreCase("java"))
+				client.getNotifier().setRefreshFlag(true);
 		}
 	}
 
