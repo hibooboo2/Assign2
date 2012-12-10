@@ -247,7 +247,7 @@ public class ClientThread extends Thread {
 		String size = "" + this.lib.getAllSongs().size();
 		out.write(size.getBytes());
 		for (String song : lib.getAllSongs()) {
-			//song = song.split("\\Q$")[0];
+			song = song.split("\\Q$")[0];
 			out.write(song.getBytes());
 		}
 	}
